@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx playwright *)",
+      "Bash(npx puppeteer *)",
+      "Bash(node *)",
+      "Bash(npm install *)"
+    ]
+  }
+}

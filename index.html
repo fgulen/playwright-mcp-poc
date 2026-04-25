@@ -257,10 +257,11 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
 .prompt-card-body { padding: 12px 16px; }
 .prompt-textarea {
   width: 100%;
-  min-height: 120px;
+  min-height: 60px;
   font-family: 'Courier New', monospace;
   font-size: 12px;
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 8px;
@@ -322,105 +323,7 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
 }
 .dropdown-item:hover { background: var(--bg-tertiary); }
 
-/* PLAN LIST */
-.plan-list { list-style: none; }
-.plan-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  gap: 10px;
-}
-.plan-item:hover { border-color: var(--brand-primary); background: var(--bg-tertiary); }
-.plan-item.active-plan { border-color: var(--brand-primary); background: var(--bg-secondary); }
-.plan-item-name { flex: 1; font-weight: 500; }
-.plan-item-meta { font-size: 11px; color: var(--text-muted); }
-.status-badge {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 500;
-}
-.status-draft { background: #e2e8f0; color: #64748b; }
-.status-ready { background: #dbeafe; color: #1d4ed8; }
-.status-running { background: #fef9c3; color: #a16207; }
-.status-done { background: #d1fae5; color: #065f46; }
-.status-failed { background: #fee2e2; color: #991b1b; }
 
-/* RUN TAB */
-.run-prompt-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 8px;
-  background: var(--bg-primary);
-}
-.run-prompt-row input[type="checkbox"] { width: auto; accent-color: var(--brand-primary); }
-.run-prompt-label { flex: 1; font-size: 13px; }
-.step-status-btn {
-  padding: 3px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--bg-tertiary);
-  cursor: pointer;
-  font-size: 14px;
-}
-.step-ok { background: #d1fae5; }
-.step-fail { background: #fee2e2; }
-.step-wait { background: #fef9c3; }
-
-/* TIMER */
-.timer-display {
-  font-size: 32px;
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
-  color: var(--brand-primary);
-  text-align: center;
-  padding: 16px;
-}
-
-/* REPORT TABLE */
-.report-table { width: 100%; border-collapse: collapse; }
-.report-table th, .report-table td {
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-  font-size: 13px;
-}
-.report-table th { background: var(--bg-tertiary); font-weight: 600; color: var(--text-secondary); }
-.report-table tr:hover td { background: var(--bg-secondary); }
-.report-note-input {
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 12px;
-  width: 100%;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-/* SUMMARY BOXES */
-.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
-.summary-box {
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  text-align: center;
-}
-.summary-box .num { font-size: 28px; font-weight: 700; }
-.summary-box .lbl { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-.num-total { color: var(--brand-primary); }
-.num-ok { color: var(--success); }
-.num-fail { color: var(--danger); }
-.num-skip { color: var(--warning); }
 
 /* MODAL */
 .modal-overlay {
@@ -468,10 +371,7 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
 
 <nav class="tab-nav">
   <button class="tab-btn active" data-tab="setup">🔧 Kurulum</button>
-  <button class="tab-btn" data-tab="plan">📋 Test Planı</button>
   <button class="tab-btn" data-tab="prompts">💬 Prompt Yönetimi</button>
-  <button class="tab-btn" data-tab="run">🚀 Çalıştırma</button>
-  <button class="tab-btn" data-tab="report">📊 Rapor</button>
 </nav>
 
 <!-- TAB 1: KURULUM -->
@@ -517,64 +417,6 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
   </div>
 </div>
 
-<!-- TAB 2: TEST PLANI -->
-<div id="tab-plan" class="tab-content">
-  <div style="display:grid;grid-template-columns:340px 1fr;gap:20px;">
-    <div>
-      <div class="card">
-        <div class="card-title">📋 Kayıtlı Planlar</div>
-        <ul class="plan-list" id="planList">
-          <li class="empty-state" style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Henüz plan yok</li>
-        </ul>
-        <button class="btn btn-primary" id="newPlanBtn" style="width:100%;margin-top:8px;">+ Yeni Plan</button>
-      </div>
-    </div>
-    <div>
-      <div class="card">
-        <div class="card-title">✏️ Plan Düzenle</div>
-        <div class="form-row cols-2">
-          <div>
-            <label>Plan No</label>
-            <input type="text" id="planId" placeholder="TP-001">
-          </div>
-          <div>
-            <label>Durum</label>
-            <select id="planStatus">
-              <option value="draft">Draft</option>
-              <option value="ready">Hazır</option>
-              <option value="running">Çalışıyor</option>
-              <option value="done">Tamamlandı</option>
-              <option value="failed">Başarısız</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div>
-            <label>Test Adı</label>
-            <input type="text" id="planName" placeholder="Örn: DB Gidiş-Dönüş Testi">
-          </div>
-        </div>
-        <div class="form-row">
-          <div>
-            <label>Hedef URL</label>
-            <input type="url" id="planUrl" placeholder="https://www.bahn.de">
-          </div>
-        </div>
-        <div class="form-row">
-          <div>
-            <label>Açıklama</label>
-            <textarea id="planDesc" rows="4" placeholder="Senaryo açıklaması..."></textarea>
-          </div>
-        </div>
-        <div class="flex">
-          <button class="btn btn-primary" id="savePlanBtn">💾 Kaydet</button>
-          <button class="btn btn-danger btn-sm" id="deletePlanBtn" style="display:none;">🗑️ Sil</button>
-          <span id="planDate" class="text-muted" style="margin-left:auto;"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- TAB 3: PROMPT YÖNETİMİ -->
 <div id="tab-prompts" class="tab-content">
@@ -603,90 +445,6 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
   <div id="promptList"></div>
 </div>
 
-<!-- TAB 4: ÇALIŞTIRMA -->
-<div id="tab-run" class="tab-content">
-  <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;">
-    <div>
-      <div class="card">
-        <div class="card-title">🎯 Prompt Seçimi</div>
-        <div class="flex mb-8">
-          <button class="btn btn-sm" id="selectAllRun">Tümünü Seç</button>
-          <button class="btn btn-sm" id="deselectAllRun">Seçimi Temizle</button>
-        </div>
-        <div id="runPromptList"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">🖥️ Sistem Promptu</div>
-        <textarea id="systemPrompt" rows="10"></textarea>
-        <div class="flex mt-8">
-          <button class="btn btn-primary" id="copyForCline">Cline için Kopyala</button>
-          <button class="btn btn-primary" id="copyForKiro">Kiro için Kopyala</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📝 Manuel Log</div>
-        <textarea id="manualLog" rows="6" placeholder="Gözlemler, notlar..."></textarea>
-      </div>
-    </div>
-    <div>
-      <div class="card">
-        <div class="card-title">⏱️ Süre Sayacı</div>
-        <div class="timer-display" id="timerDisplay">00:00:00</div>
-        <div class="flex" style="justify-content:center;gap:12px;">
-          <button class="btn btn-success" id="timerStart">▶ Başlat</button>
-          <button class="btn btn-danger" id="timerStop">⏹ Durdur</button>
-          <button class="btn" id="timerReset">↺ Sıfırla</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📌 Adım Durumları</div>
-        <div id="stepStatusList"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- TAB 5: RAPOR -->
-<div id="tab-report" class="tab-content">
-  <div class="summary-grid">
-    <div class="summary-box">
-      <div class="num num-total" id="rptTotal">0</div>
-      <div class="lbl">Toplam</div>
-    </div>
-    <div class="summary-box">
-      <div class="num num-ok" id="rptOk">0</div>
-      <div class="lbl">Başarılı</div>
-    </div>
-    <div class="summary-box">
-      <div class="num num-fail" id="rptFail">0</div>
-      <div class="lbl">Başarısız</div>
-    </div>
-    <div class="summary-box">
-      <div class="num num-skip" id="rptSkip">0</div>
-      <div class="lbl">Atlandı</div>
-    </div>
-  </div>
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="card-title" style="margin-bottom:0;">📊 Test Sonuçları</div>
-      <div class="flex">
-        <span class="text-muted" id="reportDuration">Süre: —</span>
-        <button class="btn btn-primary btn-sm" id="downloadReportBtn">⬇️ HTML İndir</button>
-      </div>
-    </div>
-    <table class="report-table" id="reportTable">
-      <thead>
-        <tr>
-          <th style="width:60px;">Adım</th>
-          <th>Başlık</th>
-          <th style="width:100px;">Durum</th>
-          <th>Not</th>
-        </tr>
-      </thead>
-      <tbody id="reportBody"></tbody>
-    </table>
-  </div>
-</div>
 
 <!-- MODAL (JSON Import) -->
 <div class="modal-overlay" id="modalOverlay">
@@ -722,292 +480,337 @@ function triggerSave() {
 const DEFAULT_PROMPTS = [
   {
     id: 'tp_p01', num: 'P-01', title: 'Landing Page Doğrulama',
-    content: `**VERİLEN:**
-- Playwright MCP aktif ve bağlı
-- Tarayıcı penceresi açık
+    content: `[ VERİLEN ]
+• Playwright MCP aktif ve tarayıcı bağlı
+• Herhangi bir sayfa açık (temiz oturum)
 
-**ADIMLAR:**
+[ ADIMLAR ]
 1. https://www.bahn.de adresine git
-2. Cookie banner varsa kapat:
-   - "Nur notwendige Cookies" veya "Only allow necessary cookies" butonunu tıkla
-   - Banner yoksa atla (try/catch ile)
-3. Ana arama formunu kontrol et:
-   - input[name="quickFinderBasic-von"] görünür mü?
-   - input[name="quickFinderBasic-nach"] görünür mü?
-4. Sayfanın başlığını (document.title) raporla
-5. Mevcut dil ayarını raporla (document.documentElement.lang)
-6. Screenshot al: "p01_landing.png"
+2. waitForLoadState('domcontentloaded') → ardından 1s bekle (SPA lazy render)
+3. Cookie banner varsa kapat (try/catch — banner olmayabilir):
+   • Selector 1: button:has-text("Nur notwendige Cookies")
+   • Selector 2: button:has-text("Ablehnen")
+   • ⚠ Banner bir <div> overlay'dir — kapatılmadan form tıklanamaz
+4. Ana arama formunu kontrol et:
+   • input[name="quickFinderBasic-von"] → visible?
+   • input[name="quickFinderBasic-nach"] → visible?
+5. Raporla: document.title + document.documentElement.lang
+6. Screenshot: "p01_landing.png"
 
-**DOĞRULAMA:**
-- ✅ Von ve Nach input alanları görünür
-- ✅ document.documentElement.lang === "de"
-- ✅ p01_landing.png kaydedildi
+[ DOĞRULAMA ]
+✅ Von input görünür (input[name="quickFinderBasic-von"])
+✅ Nach input görünür (input[name="quickFinderBasic-nach"])
+✅ document.documentElement.lang === "de"
+✅ p01_landing.png kaydedildi
 
-📋 ÖZET: bahn.de açılıyor, cookie banner kapatılıyor, arama formu görünürlüğü doğrulanıyor.
-
-NOT: Cookie banner bir <div> overlay'dir — tüm pointer event'leri intercept eder. Banner kapatılmadan form alanlarına tıklanamaz.`,
+📋 ÖZET: bahn.de açıldı, cookie banner kapatıldı, arama formu görünür ve dil "de" olarak doğrulandı.`,
     tags: ['navigation', 'assertion']
   },
   {
     id: 'tp_p02', num: 'P-02', title: 'Arama Formu Doldurma',
-    content: `**VERİLEN:**
-- P-01 tamamlandı
-- bahn.de açık, cookie banner kapalı, arama formu görünür
+    content: `[ VERİLEN ]
+• P-01 tamamlandı
+• bahn.de açık, cookie banner kapalı, Von/Nach inputlar görünür
 
-**ADIMLAR:**
-1. Von (Kalkış):
-   - input[name="quickFinderBasic-von"] → click({ force: true })
-   - "Köln Hbf" yaz → [role="option"] listesi açılınca ilk seçeneği tıkla
-   - Değerin "Köln Hbf" olduğunu doğrula
-2. Nach (Varış):
-   - input[name="quickFinderBasic-nach"] → click({ force: true })
-   - "Berlin Hbf" yaz → listeden ilk seçeneği tıkla
-3. Datum/Uhrzeit (Hinfahrt):
-   - .quick-finder-options__hinfahrt → JS click ile tıkla
-   - Dialog açılınca Vue-safe yöntemle doldur:
-     * nativeInputValueSetter + dispatchEvent('input') + dispatchEvent('change')
-     * Tag: yarın, Monat: bu ay, Jahr: bu yıl, Stunden: 08, Minuten: 00
-   - [data-test-id="quick-finder-save-button"] → JS click ile onayla
-4. Screenshot al: "p02_form_filled.png"
+[ ADIMLAR ]
+1. Von (Kalkış) — overlay olabilir, force kullan:
+   • input[name="quickFinderBasic-von"] → click({ force: true })
+   • "Köln Hbf" yaz → [role="option"] listesi açılınca ilk seçeneği tıkla
+   • input değeri "Köln Hbf" olduğunu doğrula
 
-**DOĞRULAMA:**
-- ✅ Von alanı "Köln Hbf" içeriyor
-- ✅ Nach alanı "Berlin Hbf" içeriyor
-- ✅ Hinfahrt butonu "ab 08:00" metnini içeriyor
-- ✅ p02_form_filled.png kaydedildi
+2. Nach (Varış) — aynı yöntem:
+   • input[name="quickFinderBasic-nach"] → click({ force: true })
+   • "Berlin Hbf" yaz → listeden ilk seçeneği tıkla
 
-📋 ÖZET: Kalkış/varış istasyonları ve tarih/saat form'a girildi, Hinfahrt onaylandı.
+3. Hinfahrt tarih/saat — Vue spinbutton, fill() ÇALIŞMAZ:
+   • .quick-finder-options__hinfahrt → page.evaluate(() => el.click()) ile aç
+   • Dialog açılınca nativeInputValueSetter yöntemiyle doldur:
+     – input[aria-label="Tag"]    → yarının günü
+     – input[aria-label="Monat"] → bu ayın numarası
+     – input[aria-label="Jahr"]  → bu yıl
+     – input[aria-label="Stunden"]  → 08
+     – input[aria-label="Minuten"]  → 00
+   • Her input için: setter.call(el, val) + dispatchEvent('input') + dispatchEvent('change')
+   • [data-test-id="quick-finder-save-button"] → JS click ile onayla
+   • waitForFunction(() => !document.querySelector('dialog[open]'))
 
-NOT: Von/Nach üzerinde overlay olabilir → click({ force: true }) kullan.
-Tarih inputları Vue spinbutton'dır, fill() çalışmaz → HTMLInputElement.prototype.value setter gerekir.
-Hinfahrt dialog butonu: .quick-finder-options__hinfahrt (JS click).`,
+4. Screenshot: "p02_form_filled.png"
+
+[ DOĞRULAMA ]
+✅ Von alanı "Köln Hbf" değerini içeriyor
+✅ Nach alanı "Berlin Hbf" değerini içeriyor
+✅ Hinfahrt butonu "ab 08:00" metnini içeriyor
+✅ Açık dialog yok (dialog[open] → null)
+✅ p02_form_filled.png kaydedildi
+
+📋 ÖZET: Köln→Berlin formu dolduruldu, yarın 08:00 Hinfahrt seçildi ve onaylandı.`,
     tags: ['form', 'validation']
   },
   {
     id: 'tp_p03', num: 'P-03', title: 'Gelişmiş Filtreler',
-    content: `**VERİLEN:**
-- P-02 tamamlandı
-- Von: "Köln Hbf", Nach: "Berlin Hbf", tarih/saat dolu
+    content: `[ VERİLEN ]
+• P-02 tamamlandı
+• Von: "Köln Hbf", Nach: "Berlin Hbf", Hinfahrt: yarın 08:00
 
-**ADIMLAR:**
+[ ADIMLAR ]
 1. 1. Klasse seç:
-   - button._segment-option-KLASSE_1 → tıkla
-   - aria-selected="true" olduğunu kontrol et
-2. Verkehrsmittel filtresi (sadece ICE + IC/EC):
-   - button.SearchVerkehrsmittel__dialogBtn → tıkla
-   - switch-2'den switch-9'a: label[for="switch-N--db-web-switch"] → tıkla (label'a, toggle span'a değil!)
-   - Übernehmen → JS click ile onayla
-   - Buton "Benutzerdefiniert" içermeli
-3. BahnCard 25, 1. Klasse:
-   - "Person" içeren buton → JS click (Reisende dialog aç)
-   - .DBWebSelectButton[hasText="Ermäßigung"] → click (dropdown aç)
-   - [role="option"][aria-label*="BahnCard 25, 1. Klasse"] → boundingBox al → page.mouse.click(cx, cy)
-   - KRİTİK: .DBWebSelectButton[hasText="Reisende"] → tıkla (dropdown kapat — Übernehmen'i kapatıyor!)
-   - [data-test-id="quick-finder-save-button"] → boundingBox → page.mouse.click(cx, cy)
+   • button._segment-option-KLASSE_1 → click()
+   • aria-selected="true" olduğunu doğrula
+
+2. Verkehrsmittel — sadece ICE + IC/EC:
+   • button.SearchVerkehrsmittel__dialogBtn → click()
+   • switch-2'den switch-9'a kadar toggle'ları KAPAT:
+     ⚠ Toggle span intercept eder → label[for="switch-N--db-web-switch"] tıkla (N=2..9)
+   • Übernehmen → JS click (document.querySelector('[class*="primary"]').click())
+   • Butonun "Benutzerdefiniert" içerdiğini doğrula
+
+3. BahnCard 25 — Vue 3, dispatchEvent ÇALIŞMAZ:
+   • "Person" içeren buton → JS click (Reisende dialog)
+   • .DBWebSelectButton içinde "Ermäßigung" yazan → click() (dropdown aç)
+   • [role="option"][aria-label*="BahnCard 25, 1. Klasse"] → boundingBox al
+     → page.mouse.click(box.x + box.width/2, box.y + box.height/2)
+   • ⚠ KRİTİK: Dropdown açık kalır → Übernehmen'i kapatır!
+     → .DBWebSelectButton içinde "Reisende" yazan → tıkla (dropdown kapat)
+   • [data-test-id="quick-finder-save-button"] → boundingBox → page.mouse.click(cx, cy)
+   • "BahnCard 25" içeren buton görünür olmalı
+
 4. Rückfahrt (bugün + 4 gün, 18:00):
-   - .quick-finder-options__rueckfahrt → JS click
-   - Takvimden hedef günü: .db-web-date-picker-calendar-day listesinde index=(gün+1) → JS click
-   - Vue-safe: Stunden=18, Minuten=00
-   - dialog[open] içindeki [data-test-id="undefined-save-button"] → tıkla
-5. Screenshot al: "p03_filters_applied.png"
+   • .quick-finder-options__rueckfahrt → JS click
+   • Aktif dialog: document.querySelector('dialog[open]')
+   • Takvimden hedef günü: .db-web-date-picker-calendar-day[index = gün+1] → JS click
+     ⚠ Sadece input set etmek yetmez — takvimden tıklamak zorunlu
+   • Stunden: 18, Minuten: 00 → nativeInputValueSetter yöntemi
+   • dialog[open] içindeki [data-test-id="undefined-save-button"] → tıkla
+     ⚠ Hinfahrt'tan FARKLI test-id!
+   • waitForFunction(() => !document.querySelector('dialog[open]'))
 
-**DOĞRULAMA:**
-- ✅ 1. Klasse butonu aria-selected="true"
-- ✅ Verkehrsmittel butonu "Benutzerdefiniert" içeriyor
-- ✅ "BahnCard 25" içeren buton görünür
-- ✅ Rückfahrt butonu "ab 18:00" içeriyor
-- ✅ p03_filters_applied.png kaydedildi
+5. Screenshot: "p03_filters_applied.png"
 
-📋 ÖZET: 1. Klasse, ICE-only filtresi, BahnCard 25 ve dönüş bileti yapılandırıldı.
+[ DOĞRULAMA ]
+✅ 1. Klasse butonu aria-selected="true"
+✅ Verkehrsmittel butonu "Benutzerdefiniert" içeriyor
+✅ "BahnCard 25" içeren buton görünür
+✅ Rückfahrt butonu "ab 18:00" içeriyor
+✅ Açık dialog yok
+✅ p03_filters_applied.png kaydedildi
 
-NOT: BahnCard için dispatchEvent çalışmaz → page.mouse.click() zorunlu.
-BahnCard seçimi sonrası dropdown Übernehmen'i kapatır → Önce "Reisende" header'ına tıkla.
-Rückfahrt save button test-id: "undefined-save-button" (Hinfahrt'tan farklı!).`,
+📋 ÖZET: 1. Klasse, ICE-only, BahnCard 25 ve Rückfahrt (bugün+4, 18:00) yapılandırıldı.`,
     tags: ['form', 'validation']
   },
   {
     id: 'tp_p04', num: 'P-04', title: 'Arama Sonuçları Analizi',
-    content: `**VERİLEN:**
-- P-03 tamamlandı
-- Tüm filtreler uygulandı: 1. Klasse, ICE/IC-EC, BahnCard 25, dönüş bileti
+    content: `[ VERİLEN ]
+• P-03 tamamlandı
+• Filtreler: 1. Klasse · ICE/IC-EC only · BahnCard 25 · Hin+Rück
 
-**ADIMLAR:**
-1. button.quick-finder-basic__search-btn--desktop → tıkla
-2. Sonuçların yüklenmesini bekle:
-   - URL **/suche** pattern'ini bekle
-   - /\\d{2}:\\d{2}[\\u2013-]\\d{2}:\\d{2}/ regex'i ile bağlantı kartlarını bekle (en-dash U+2013!)
-   - Timeout: 40 saniye
+[ ADIMLAR ]
+1. Arama başlat:
+   • button.quick-finder-basic__search-btn--desktop → click()
+   ⚠ "Suchen" metni 2 butonda var (desktop+mobile) → strict mode hatası
+     → class-based selector zorunlu
+
+2. Sonuç yüklenmesini bekle (kombinasyon — sadece timeout GÜVENILMEZ):
+   • waitForURL('**/suche**', { timeout: 40_000 })
+   • waitForFunction(
+       () => /\d{2}:\d{2}[–\-]\d{2}:\d{2}/.test(document.body.textContent),
+       { timeout: 40_000 }
+     )
+   ⚠ Zaman ayırıcısı en-dash (–, U+2013) — normal tire ile regex EŞLEŞMEz
+
 3. Şunları raporla:
-   - Kaç bağlantı listelendi? (unique time-range sayısı)
-   - İlk 3 bağlantının kalkış-varış saatleri ve süreleri
-   - En düşük fiyat (ab X,XX € pattern)
-   - ICE ibaresi var mı? (ICE \\d+ pattern)
-   - "ausgebucht" uyarısı var mı?
-   - Aktarmalı/direkt sefer dağılımı ("Umstieg" içeren kartlar)
-4. Screenshot al: "p04_results.png"
+   • Toplam bağlantı sayısı (unique time-range pattern)
+   • İlk 3 bağlantının: kalkış saati · varış saati · süre
+   • En düşük fiyat (ab X,XX € pattern)
+   • ICE var mı? (ICE \d+ pattern → Evet/Hayır)
+   • "ausgebucht" uyarısı var mı?
+   • Aktarmalı sefer sayısı ("Umstieg" içeren kartlar)
 
-**DOĞRULAMA:**
-- ✅ URL "/suche" içeriyor
-- ✅ En az 1 bağlantı listelendi
-- ✅ İlk 3 bağlantının saatleri ve süreleri raporlandı
-- ✅ Fiyat bilgisi alındı
-- ✅ p04_results.png kaydedildi
+4. Screenshot: "p04_results.png"
 
-📋 ÖZET: Arama tetiklendi, sonuç sayfası yüklendi, bağlantı detayları ve fiyatlar raporlandı.
+[ DOĞRULAMA ]
+✅ URL "/suche" içeriyor
+✅ En az 1 bağlantı bulundu ve listelendi
+✅ İlk 3 bağlantının saat ve süre bilgisi raporlandı
+✅ En düşük fiyat raporlandı
+✅ p04_results.png kaydedildi
 
-NOT: Zaman ayırıcısı en-dash (–, U+2013) — normal tire ile regex eşleşmez.
-Test timeout en az 120 saniye olmalı. Suchen butonu: .quick-finder-basic__search-btn--desktop (desktop class kullan, 2 buton var).`,
+📋 ÖZET: Arama gönderildi, /suche sayfası yüklendi, bağlantı/fiyat detayları raporlandı.`,
     tags: ['assertion', 'reporting']
   },
   {
     id: 'tp_p05', num: 'P-05', title: 'Bilet Seçimi & Koltuk',
-    content: `**VERİLEN:**
-- P-04 tamamlandı
-- Arama sonuçları görünür, URL /suche içeriyor
+    content: `[ VERİLEN ]
+• P-04 tamamlandı
+• Sonuç listesi görünür, URL /suche içeriyor
 
-**ADIMLAR:**
+[ ADIMLAR ]
 1. Hinfahrt seç:
-   - İlk görünür "Weiter" butonuna JS click
-   - 5 saniye bekle (navigasyon)
+   • İlk görünür "Weiter" butonu → JS click
+   • waitForURL('**/rueckfahrt**', { timeout: 30_000 }) + waitForFunction(results loaded)
+
 2. Rückfahrt seç:
-   - waitForURL('**/rueckfahrt**')
-   - Sonuçlar yüklenince ilk "Weiter" butonuna JS click
+   • Sonuçlar yüklenince ilk "Weiter" butonu → JS click
+   • waitForURL('**/angebotsauswahl**', { timeout: 30_000 })
+
 3. Angebote sayfası (/buchung/fahrplan/angebotsauswahl):
-   - "Super Sparpreis" + "Auswählen" içeren butona JS click
-   - "Sitzplatzreservierung" içeren label'a JS click (aktif et)
-   - "Sitzplatz auswählen" butonuna JS click
-4. GSD iframe doğrula:
-   - iframe.db-web-dialog-gsd-iframe__iframe görünür mü?
-   - iframe içinde "ICE" metni var mı?
-5. Screenshot al: "p05_detail.png"
+   • "Super Sparpreis" + "Auswählen" içeren buton → JS click
+   • "Sitzplatzreservierung" içeren label → JS click (aktif et)
+     ⚠ Label tıkla, checkbox'a değil — toggle span intercept eder
+   • "Sitzplatz auswählen" butonu → JS click
 
-**DOĞRULAMA:**
-- ✅ Rückfahrt sayfası yüklendi (/rueckfahrt)
-- ✅ Angebote sayfasına geçildi
-- ✅ Sitzplatzreservierung aktif edildi
-- ✅ GSD iframe görünür ve "ICE" içeriyor
-- ✅ p05_detail.png kaydedildi
+4. GSD iframe doğrula (same-origin → frameLocator kullan):
+   • iframe.db-web-dialog-gsd-iframe__iframe → visible?
+   • page.frameLocator('iframe.db-web-dialog-gsd-iframe__iframe')
+     .locator('body') → containsText('ICE')?
 
-🚨 GÜVENLİK SINIRI: "Kaufen", "Bezahlen", "Weiter zur Buchung" butonlarına TIKLAMA. Varlıklarını logla, tıklama.
+5. 🚨 GÜVENLİK SINIRI — Bu butonlara KESİNLİKLE TIKLAMA:
+   • "Kaufen" · "Bezahlen" · "Weiter zur Buchung" · "Kostenpflichtig"
+   • Sayfa üzerinde kaç tane olduğunu say ve logla, etkileşime girme
 
-📋 ÖZET: Hinfahrt + Rückfahrt seçildi, Super Sparpreis + koltuk rezervasyonu aktif edildi, GSD iframe doğrulandı.
+6. Screenshot: "p05_detail.png"
 
-NOT: Toplam beklenen fiyat: 236,98 € (H+R) + 13,80 € (Sitzplatz). GSD iframe same-origin → frameLocator ile erişilebilir.`,
+[ DOĞRULAMA ]
+✅ /rueckfahrt sayfası yüklendi
+✅ /angebotsauswahl sayfasına geçildi
+✅ Sitzplatzreservierung aktif edildi
+✅ GSD iframe görünür
+✅ iframe içinde "ICE" metni mevcut
+✅ Satın alma butonlarına tıklanmadı
+✅ p05_detail.png kaydedildi
+
+📋 ÖZET: Hinfahrt+Rückfahrt seçildi, Super Sparpreis+koltuk aktif edildi, GSD iframe doğrulandı, güvenlik sınırı korundu.`,
     tags: ['navigation', 'assertion']
   },
   {
     id: 'tp_p06', num: 'P-06', title: 'Fiyat & Tarife Analizi',
-    content: `**VERİLEN:**
-- P-05 tamamlandı
-- Angebote / fiyat seçim sayfası açık
+    content: `[ VERİLEN ]
+• P-05 tamamlandı
+• Angebote / fiyat seçim sayfası açık, Super Sparpreis seçili
 
-**ADIMLAR:**
-1. Tarife listesi:
-   - Mevcut tüm tarifeleri bul (Super Sparpreis, Sparpreis, Flexpreis vb.)
-   - Her tarife için not al: Fiyat (€), İptal/değişiklik koşulları, Müsaitlik durumu
-2. BahnCard indirim doğrulama:
-   - "25%" veya "BahnCard" ibaresi fiyat yanında görünüyor mu?
-   - BahnCard 25 indiriminin uygulandığını doğrula
-3. Toplam hesaplama:
-   - Gidiş Sparpreis fiyatı: [X] €
-   - Dönüş Sparpreis fiyatı: [X] €
-   - Koltuk rezervasyonu: [X] €
-   - TOPLAM: [X] €
-4. "Sparpreis" tarifesini seç (sadece seç, devam etme)
-5. Screenshot al: "p06_pricing.png"
+[ ADIMLAR ]
+1. Tüm tarife seçeneklerini listele:
+   • Super Sparpreis · Sparpreis · Flexpreis (varsa diğerleri)
+   • Her tarife için: fiyat (€) · iptal koşulu · müsaitlik durumu
+   ⚠ data-value attribute'unda "&" varsa CSS selector kırılır
+     → querySelectorAll('[data-value]') + getAttribute() ile filtrele
 
-**DOĞRULAMA:**
-- ✅ En az 2 tarife bulundu ve listelendi
-- ✅ BahnCard 25 indirimi görünür
-- ✅ Toplam fiyat hesaplandı ve raporlandı
-- ✅ Sparpreis seçili (devam edilmedi)
-- ✅ p06_pricing.png kaydedildi
+2. BahnCard 25 indirimini doğrula:
+   • Fiyat yanında "25%" veya "BahnCard" ibaresi görünüyor mu?
+   • Hesaplanan fiyat indirimli fiyat ile uyuşuyor mu?
 
-📋 ÖZET: Tüm tarife seçenekleri analiz edildi, BahnCard indirimi doğrulandı, Sparpreis seçildi.`,
+3. Toplam maliyet hesapla ve raporla:
+   • Hinfahrt Super Sparpreis : _____ €
+   • Rückfahrt Super Sparpreis: _____ €
+   • Sitzplatzreservierung    : _____ €
+   • TOPLAM                   : _____ €
+   (Referans: 236,98 € H+R + 13,80 € Sitzplatz = ~250,78 €)
+
+4. "Sparpreis" tarifesini seç — SADECE SEÇ, DEVAM ETME
+5. Screenshot: "p06_pricing.png"
+
+[ DOĞRULAMA ]
+✅ En az 2 tarife seçeneği listelendi
+✅ BahnCard 25 indiriminin uygulandığı görünür
+✅ Toplam fiyat (H+R + Sitzplatz) hesaplandı ve raporlandı
+✅ Sparpreis seçili ama "Weiter" tıklanmadı
+✅ p06_pricing.png kaydedildi
+
+📋 ÖZET: Tüm tarife seçenekleri analiz edildi, BahnCard indirimi doğrulandı, toplam maliyet raporlandı.`,
     tags: ['assertion', 'reporting']
   },
   {
     id: 'tp_p07', num: 'P-07', title: 'Güvenlik Sınırı & Özet Rapor',
-    content: `**VERİLEN:**
-- P-01..P-06 tüm adımlar çalıştırıldı
-- Mevcut URL: Sparpreis seçilmiş, satın alma öncesi son ekran
+    content: `[ VERİLEN ]
+• P-01..P-06 tüm adımlar çalıştırıldı
+• Sparpreis seçili, satın alma öncesi son ekran
 
-**ADIMLAR:**
-1. GÜVENLİK SINIRI: "Weiter zur Buchung", "Kaufen", "Bezahlen" butonlarını TIKLAMA — sadece varlıklarını logla
+[ ADIMLAR ]
+1. 🚨 GÜVENLİK KONTROLÜ — tıklama yasak butonlar:
+   • Şu butonları ara ve SADECE sayılarını logla:
+     – "Weiter zur Buchung" · "Kaufen" · "Bezahlen" · "Kostenpflichtig"
+   • Hiçbirine tıklama, hover etme, focus verme
+
 2. Aşağıdaki özet raporu oluştur:
 
-TEST SENARYOSU ÖZET RAPORU
-Tarih: [bugünün tarihi]
-Senaryo: Köln Hbf → Berlin Hbf (Hin- und Rückfahrt, 1. Klasse, ICE, BahnCard 25)
-Tarife: Sparpreis
-
-ADIM SONUÇLARI:
-P-01 Landing Page    : [✓/✗] — [not]
-P-02 Form Doldurma   : [✓/✗] — [not]
-P-03 Filtreler       : [✓/✗] — [not]
-P-04 Arama Sonuçları : [✓/✗] — [not]
-P-05 Bilet Seçimi    : [✓/✗] — [not]
-P-06 Fiyat Analizi   : [✓/✗] — [not]
-P-07 Güvenlik Sınırı : ✓ Korundu
-
-EN DÜŞÜK FİYAT: [X] € (Sparpreis, 1. Klasse, BahnCard 25)
-BULUNAN SORUNLAR: [varsa listele, yoksa "Yok"]
+   ┌─ TEST SENARYOSU ÖZET RAPORU ─────────────────┐
+   │ Tarih  : [bugünün tarihi]                     │
+   │ Süre   : [başlangıçtan bu yana geçen süre]    │
+   │ URL    : https://www.bahn.de                  │
+   │ Senaryo: Köln Hbf → Berlin Hbf               │
+   │ Tür    : Hin+Rück · 1. Klasse · ICE · BC25   │
+   │ Tarife : Sparpreis                            │
+   ├───────────────────────────────────────────────┤
+   │ P-01 Landing Page    : [✓/✗] — [not]         │
+   │ P-02 Form Doldurma   : [✓/✗] — [not]         │
+   │ P-03 Filtreler       : [✓/✗] — [not]         │
+   │ P-04 Arama Sonuçları : [✓/✗] — [not]         │
+   │ P-05 Bilet Seçimi    : [✓/✗] — [not]         │
+   │ P-06 Fiyat Analizi   : [✓/✗] — [not]         │
+   │ P-07 Güvenlik Sınırı : ✓ Korundu             │
+   ├───────────────────────────────────────────────┤
+   │ En düşük fiyat : _____ € (Sparpreis, BC25)   │
+   │ Sorunlar       : [varsa listele / Yok]        │
+   └───────────────────────────────────────────────┘
 
 3. Tüm tarayıcı sekmelerini kapat
 
-**DOĞRULAMA:**
-- ✅ Satın alma butonu tıklanmadı
-- ✅ Tüm adımlar raporlandı
-- ✅ Toplam fiyat raporlandı
+[ DOĞRULAMA ]
+✅ "Kaufen/Bezahlen/Weiter zur Buchung" butonlarına tıklanmadı
+✅ Tüm P-01..P-06 adım sonuçları tabloda dolduruldu
+✅ Toplam fiyat ve sorunlar raporlandı
+✅ Tarayıcı kapatıldı
 
-📋 ÖZET: Test tamamlandı, güvenlik sınırı korundu, tüm adımların sonuçları özetlendi.`,
+📋 ÖZET: Test tamamlandı — 7 adım çalıştırıldı, güvenlik sınırı korundu, tam özet rapor oluşturuldu.`,
     tags: ['reporting']
   },
   {
     id: 'tp_p08', num: 'P-08', title: 'Framework Kodu Oluştur',
-    content: `**VERİLEN:**
-- P-01..P-07 tamamlandı ve doğrulandı
-- FRAMEWORK.md dosyası proje kök dizininde mevcut
+    content: `[ VERİLEN ]
+• P-01..P-07 MCP ile doğrulandı, tüm selector'lar çalışıyor
+• FRAMEWORK.md dosyası proje kök dizininde mevcut
+• PLAYWRIGHT_MCP_TIPS.md dosyası proje kök dizininde mevcut
 
-**ADIMLAR:**
-1. FRAMEWORK.md dosyasını oku (proje kök dizininde)
+[ ADIMLAR ]
+1. Her iki dosyayı oku: FRAMEWORK.md + PLAYWRIGHT_MCP_TIPS.md
+
 2. playwright-framework/ klasörünü oluştur
-3. Şu dosyaları FRAMEWORK.md §Output Structure sıralamasıyla üret:
-   - .env (BASE_URL=https://www.bahn.de, PURCHASE_GUARD=true)
-   - .env.example (tüm değerler boş/template)
-   - .gitignore
-   - package.json
-   - playwright.config.ts (video:on, viewport:null, --start-maximized)
-   - global-setup.ts (PURCHASE_GUARD kontrolü)
-   - global-teardown.ts
-   - pages/BasePage.ts
-   - pages/BahnSearchPage.ts (P-01/P-02/P-03 adımları — POM)
-   - pages/BahnResultsPage.ts (P-04 adımları — POM)
-   - pages/BahnDetailPage.ts (P-05/P-06 adımları — POM)
-   - tests/TP-001/db-booking-flow.spec.ts (P-01..P-07 her biri ayrı test() bloğu)
-   - utils/reporter.ts (Markdown reporter — FRAMEWORK.md §REPORT.md Generation'dan)
-   - utils/logger.ts
-   - utils/screenshotter.ts
-   - fixtures/test-fixtures.ts
-   - reports/.gitkeep
-   - README.md (Quick Start dahil)
 
-**DOĞRULAMA:**
-- ✅ playwright-framework/ klasörü ve tüm alt klasörler oluşturuldu
-- ✅ npm install başarılı (package.json geçerli)
-- ✅ PURCHASE_GUARD=true tüm dosyalarda değiştirilmedi
-- ✅ P-01..P-07 her biri ayrı test() bloğu (birleştirme!)
-- ✅ Video her zaman açık (video:'off' yok)
-- ✅ README.md Quick Start adımlarını içeriyor
+3. Şu dosyaları üret (FRAMEWORK.md §Output Structure sırasıyla):
+   • .env               → BASE_URL, PURCHASE_GUARD=true, HEADLESS=false
+   • .env.example       → tüm değerler boş
+   • .gitignore
+   • package.json       → @playwright/test + dotenv, TypeScript only
+   • playwright.config.ts → timeout:120_000, video:on, viewport:null, --start-maximized
+   • global-setup.ts    → PURCHASE_GUARD kontrolü (false ise throw Error)
+   • global-teardown.ts
+   • pages/BasePage.ts  → screenshot(), waitForIdle(), guardedAction()
+   • pages/BahnSearchPage.ts   → P-01/P-02/P-03 adımları
+   • pages/BahnResultsPage.ts  → P-04 adımları
+   • pages/BahnDetailPage.ts   → P-05/P-06 adımları
+   • tests/TP-001/db-booking-flow.spec.ts → P-01..P-07 her biri ayrı test() bloğu
+   • utils/reporter.ts  → FRAMEWORK.md §REPORT.md Generation implementasyonu
+   • utils/logger.ts    → step logger
+   • utils/screenshotter.ts → hata anında otomatik screenshot
+   • fixtures/test-fixtures.ts
+   • reports/.gitkeep
+   • README.md          → Quick Start dahil
 
-📋 ÖZET: P-01..P-07 senaryosu tam Playwright TypeScript framework'e dönüştürüldü — POM yapısı, video kaydı, Markdown reporter ve güvenlik sınırı dahil.
+4. PLAYWRIGHT_MCP_TIPS.md'den şu pattern'ları koda yansıt:
+   • Vue spinbutton → nativeInputValueSetter helper (utils/)
+   • Toggle → label click helper
+   • BahnCard → page.mouse.click(boundingBox)
+   • Beklemeler → waitForURL + waitForFunction (sadece timeout değil)
+   • Selector → class-based, aria-label*= partial match
 
-ÖNEMLİ KISITLAMALAR (FRAMEWORK.md §Generation Constraints):
-- Hardcoded credentials yasak — .env'den oku
-- PURCHASE_GUARD=true asla değiştirme
-- TypeScript only, JS dosyası oluşturma
-- third-party helper yok — sadece @playwright/test + dotenv
-- Her prompt ayrı test() bloğu — birleştirme`,
+[ DOĞRULAMA ]
+✅ playwright-framework/ tüm dosyaları oluşturuldu
+✅ npm install başarılı
+✅ PURCHASE_GUARD=true hiçbir dosyada değiştirilmedi
+✅ P-01..P-07 ayrı test() blokları (birleştirme yok)
+✅ video:'off' hiçbir yerde yok
+✅ Vue helper'lar utils/ altında
+
+📋 ÖZET: MCP ile doğrulanmış senaryo tam TypeScript Playwright framework'e dönüştürüldü — POM, Vue helper'lar, video, reporter ve güvenlik sınırı dahil.`,
     tags: ['reporting']
   }
 ];
@@ -1020,49 +823,19 @@ const TEMPLATES = {
   login: { title: 'Login Şablonu', content: `[URL] adresine git ve giriş yap:\nUYARI: Test kullanıcısı kullan, gerçek kimlik bilgisi girme.\n- Kullanıcı adı: [TEST_USER]\n- Şifre: [TEST_PASS]\nBaşarılı giriş sonrası: [BEKLENEN_SAYFA] sayfasına yönlendirildiğini doğrula.`, tags: ['form'] }
 };
 
-const DEFAULT_SYSTEM_PROMPT = `Sen bir Playwright test otomasyon uzmanısın ve bir KI-Testinfrastruktur POC'u için çalışıyorsun.
-
-GÖREV: Verilen test promptlarını sırayla çalıştırarak Deutsche Bahn web sitesini (bahn.de) test et.
-
-KURALLAR:
-1. Her adımı açıkça logla: "Adım X başlıyor...", "Adım X tamamlandı."
-2. Önemli durumlarda screenshot al (hata, beklenmeyen UI, sonuç sayfası)
-3. SATIN ALMA SINIRI: Hiçbir koşulda ödeme veya satın alma adımına geçme
-4. Timeout: Her aksiyonda maksimum 10 saniye bekle
-5. Retry: Başarısız aksiyonu 2 kez dene, sonra hata olarak logla
-6. Raporlama: Türkçe raporla, teknik terimler (ICE, BahnCard, Sparpreis) orijinal haliyle kalsın
-7. Autocomplete: Form alanlarına yazarken dropdown açılmasını bekle, sonra seç
-8. Tarih: Dinamik olarak hesapla — sabit tarih yazma
-
-BAŞARI KRİTERİ:
-7 adımın tamamı hatasız çalışırsa senaryo başarılı.
-Herhangi bir adım başarısız olursa, hatayı logla ve sonraki adıma geç.
-
-DEMO NOTU:
-Bu bir güvenli test ortamıdır. Kullanıcı verisi girilmez, ödeme yapılmaz.`;
-
 // ─── STATE ────────────────────────────────────────────────────────────────────
+const DATA_VERSION = 4;
 let prompts = store.get('prompts', null);
-if (!prompts || prompts.length === 0) { prompts = DEFAULT_PROMPTS.map(p => ({...p})); }
-
-let plans = store.get('plans', []);
-let currentPlanId = store.get('currentPlanId', null);
-let stepStatuses = store.get('stepStatuses', {});
-let runChecked = store.get('runChecked', {});
-let timerSeconds = store.get('timerSeconds', 0);
-let timerRunning = false;
-let timerInterval = null;
-let reportNotes = store.get('reportNotes', {});
+const storedVersion = store.get('dataVersion', 0);
+if (!prompts || prompts.length === 0 || storedVersion < DATA_VERSION) {
+  prompts = DEFAULT_PROMPTS.map(p => ({...p}));
+  store.set('dataVersion', DATA_VERSION);
+}
 
 // ─── SAVE ─────────────────────────────────────────────────────────────────────
 function saveAll() {
   store.set('prompts', prompts);
-  store.set('plans', plans);
-  store.set('currentPlanId', currentPlanId);
-  store.set('stepStatuses', stepStatuses);
-  store.set('runChecked', runChecked);
-  store.set('timerSeconds', timerSeconds);
-  store.set('reportNotes', reportNotes);
+  store.set('dataVersion', DATA_VERSION);
   triggerSave();
 }
 
@@ -1073,10 +846,17 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    if (btn.dataset.tab === 'run') renderRunTab();
-    if (btn.dataset.tab === 'report') renderReport();
   });
 });
+
+// ─── AUTO-RESIZE TEXTAREA ─────────────────────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+function autoResizeAll() {
+  document.querySelectorAll('.prompt-textarea').forEach(autoResize);
+}
 
 // ─── COPY UTILITY ─────────────────────────────────────────────────────────────
 function copyText(text, btn) {
@@ -1094,7 +874,7 @@ document.querySelectorAll('.copy-btn').forEach(btn => {
 
 
 // Checklist restore + save
-const chkKeys = ['chk1','chk2','chk3','chk4','chk5','chk6','chk7'];
+const chkKeys = ['chk1','chk2','chk3'];
 chkKeys.forEach(k => {
   const el = document.getElementById(k);
   const lbl = el.nextElementSibling;
@@ -1108,94 +888,6 @@ chkKeys.forEach(k => {
   });
 });
 
-// ─── TAB 2: TEST PLANI ────────────────────────────────────────────────────────
-function genPlanId() {
-  const n = plans.length + 1;
-  return 'TP-' + String(n).padStart(3, '0');
-}
-
-function renderPlanList() {
-  const ul = document.getElementById('planList');
-  if (plans.length === 0) {
-    ul.innerHTML = '<li style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Henüz plan yok</li>';
-    return;
-  }
-  ul.innerHTML = '';
-  plans.forEach(p => {
-    const li = document.createElement('li');
-    li.className = 'plan-item' + (p.id === currentPlanId ? ' active-plan' : '');
-    li.dataset.id = p.id;
-    li.innerHTML = `
-      <div class="plan-item-name">${escHtml(p.planId || p.id)} — ${escHtml(p.name || '(adsız)')}</div>
-      <span class="status-badge status-${p.status}">${statusLabel(p.status)}</span>`;
-    li.addEventListener('click', () => loadPlan(p.id));
-    ul.appendChild(li);
-  });
-}
-
-function statusLabel(s) {
-  return {draft:'Draft',ready:'Hazır',running:'Çalışıyor',done:'Tamamlandı',failed:'Başarısız'}[s] || s;
-}
-
-function loadPlan(id) {
-  currentPlanId = id;
-  const p = plans.find(x => x.id === id);
-  if (!p) return;
-  document.getElementById('planId').value = p.planId || '';
-  document.getElementById('planName').value = p.name || '';
-  document.getElementById('planUrl').value = p.url || '';
-  document.getElementById('planDesc').value = p.desc || '';
-  document.getElementById('planStatus').value = p.status || 'draft';
-  document.getElementById('planDate').textContent = p.created ? 'Oluşturulma: ' + p.created : '';
-  document.getElementById('deletePlanBtn').style.display = '';
-  renderPlanList();
-  saveAll();
-}
-
-function clearPlanForm() {
-  currentPlanId = null;
-  document.getElementById('planId').value = genPlanId();
-  document.getElementById('planName').value = '';
-  document.getElementById('planUrl').value = 'https://www.bahn.de';
-  document.getElementById('planDesc').value = '';
-  document.getElementById('planStatus').value = 'draft';
-  document.getElementById('planDate').textContent = '';
-  document.getElementById('deletePlanBtn').style.display = 'none';
-  renderPlanList();
-}
-
-document.getElementById('newPlanBtn').addEventListener('click', clearPlanForm);
-
-document.getElementById('savePlanBtn').addEventListener('click', () => {
-  const planId = document.getElementById('planId').value.trim() || genPlanId();
-  const name = document.getElementById('planName').value.trim();
-  const url = document.getElementById('planUrl').value.trim();
-  const desc = document.getElementById('planDesc').value.trim();
-  const status = document.getElementById('planStatus').value;
-
-  if (currentPlanId) {
-    const p = plans.find(x => x.id === currentPlanId);
-    if (p) { Object.assign(p, {planId, name, url, desc, status}); }
-  } else {
-    const id = 'plan_' + Date.now();
-    currentPlanId = id;
-    plans.push({ id, planId, name, url, desc, status, created: new Date().toLocaleDateString('tr-TR') });
-    document.getElementById('deletePlanBtn').style.display = '';
-  }
-  renderPlanList();
-  saveAll();
-});
-
-document.getElementById('deletePlanBtn').addEventListener('click', () => {
-  if (!currentPlanId) return;
-  plans = plans.filter(p => p.id !== currentPlanId);
-  clearPlanForm();
-  saveAll();
-});
-
-// Init plan tab
-clearPlanForm();
-renderPlanList();
 
 // ─── TAB 3: PROMPTS ──────────────────────────────────────────────────────────
 const TAGS_ALL = ['navigation','form','validation','assertion','reporting'];
@@ -1242,6 +934,7 @@ function renderPrompts() {
     setupDragEvents(card);
   });
   setupPromptEvents();
+  requestAnimationFrame(autoResizeAll);
 }
 
 function setupPromptEvents() {
@@ -1257,6 +950,7 @@ function setupPromptEvents() {
 
   container.querySelectorAll('[data-field="content"]').forEach(el => {
     el.addEventListener('input', () => {
+      autoResize(el);
       const p = prompts.find(x => x.id === el.dataset.id);
       if (p) {
         p.content = el.value;
@@ -1448,198 +1142,6 @@ document.getElementById('modalCancel').addEventListener('click', () => {
 document.getElementById('modalConfirm').addEventListener('click', () => {
   document.getElementById('modalOverlay').classList.remove('open');
   if (modalCallback) modalCallback();
-});
-
-// ─── TAB 4: RUN ──────────────────────────────────────────────────────────────
-function renderRunTab() {
-  // System prompt
-  const sp = document.getElementById('systemPrompt');
-  if (!sp.value) sp.value = store.get('systemPrompt', DEFAULT_SYSTEM_PROMPT);
-
-  // Prompt list
-  const runList = document.getElementById('runPromptList');
-  runList.innerHTML = '';
-  prompts.forEach(p => {
-    const row = document.createElement('div');
-    row.className = 'run-prompt-row';
-    const checked = runChecked[p.id] !== false;
-    const status = stepStatuses[p.id] || 'wait';
-    const statusEmoji = {ok:'✅', fail:'❌', wait:'⏳'}[status];
-    row.innerHTML = `
-      <input type="checkbox" data-id="${p.id}" ${checked?'checked':''}>
-      <span class="run-prompt-label"><strong>${escHtml(p.num)}</strong> — ${escHtml(p.title)}</span>
-      <button class="step-status-btn step-${status}" data-id="${p.id}">${statusEmoji}</button>`;
-    runList.appendChild(row);
-
-    row.querySelector('input[type="checkbox"]').addEventListener('change', el => {
-      runChecked[p.id] = el.target.checked;
-      saveAll();
-    });
-    row.querySelector('.step-status-btn').addEventListener('click', function() {
-      const cycle = {wait:'ok', ok:'fail', fail:'wait'};
-      stepStatuses[p.id] = cycle[stepStatuses[p.id] || 'wait'];
-      saveAll();
-      renderRunTab();
-    });
-  });
-
-  // Step status sidebar
-  const ssList = document.getElementById('stepStatusList');
-  ssList.innerHTML = '';
-  prompts.forEach(p => {
-    const status = stepStatuses[p.id] || 'wait';
-    const el = document.createElement('div');
-    el.className = 'run-prompt-row';
-    el.style.cursor = 'pointer';
-    el.innerHTML = `<span style="font-size:16px">${{ok:'✅',fail:'❌',wait:'⏳'}[status]}</span> <span style="font-size:13px">${escHtml(p.num)} ${escHtml(p.title)}</span>`;
-    el.addEventListener('click', () => {
-      const cycle = {wait:'ok', ok:'fail', fail:'wait'};
-      stepStatuses[p.id] = cycle[status];
-      saveAll();
-      renderRunTab();
-    });
-    ssList.appendChild(el);
-  });
-}
-
-document.getElementById('systemPrompt').addEventListener('input', function() {
-  store.set('systemPrompt', this.value);
-  triggerSave();
-});
-document.getElementById('manualLog').addEventListener('input', function() {
-  store.set('manualLog', this.value);
-  triggerSave();
-});
-
-function buildRunText(tool) {
-  const sys = document.getElementById('systemPrompt').value;
-  const selected = prompts.filter(p => runChecked[p.id] !== false);
-  const promptText = selected.map(p => `=== ${p.num}: ${p.title} ===\n${p.content}`).join('\n\n');
-  return `[SİSTEM PROMPT - ${tool}]\n${sys}\n\n[TEST PROMPTLARI]\n${promptText}`;
-}
-
-document.getElementById('copyForCline').addEventListener('click', function() {
-  copyText(buildRunText('Cline'), this);
-});
-document.getElementById('copyForKiro').addEventListener('click', function() {
-  copyText(buildRunText('Kiro'), this);
-});
-
-document.getElementById('selectAllRun').addEventListener('click', () => {
-  prompts.forEach(p => { runChecked[p.id] = true; });
-  saveAll(); renderRunTab();
-});
-document.getElementById('deselectAllRun').addEventListener('click', () => {
-  prompts.forEach(p => { runChecked[p.id] = false; });
-  saveAll(); renderRunTab();
-});
-
-// ─── TIMER ───────────────────────────────────────────────────────────────────
-function formatTime(s) {
-  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-  return [h,m,sec].map(x=>String(x).padStart(2,'0')).join(':');
-}
-function updateTimerDisplay() {
-  document.getElementById('timerDisplay').textContent = formatTime(timerSeconds);
-}
-updateTimerDisplay();
-
-document.getElementById('timerStart').addEventListener('click', () => {
-  if (timerRunning) return;
-  timerRunning = true;
-  timerInterval = setInterval(() => {
-    timerSeconds++;
-    updateTimerDisplay();
-    saveAll();
-  }, 1000);
-});
-document.getElementById('timerStop').addEventListener('click', () => {
-  timerRunning = false;
-  clearInterval(timerInterval);
-});
-document.getElementById('timerReset').addEventListener('click', () => {
-  timerRunning = false;
-  clearInterval(timerInterval);
-  timerSeconds = 0;
-  updateTimerDisplay();
-  saveAll();
-});
-
-// ─── TAB 5: REPORT ────────────────────────────────────────────────────────────
-function renderReport() {
-  let ok = 0, fail = 0, wait = 0;
-  const tbody = document.getElementById('reportBody');
-  tbody.innerHTML = '';
-
-  prompts.forEach(p => {
-    const status = stepStatuses[p.id] || 'wait';
-    if (status === 'ok') ok++;
-    else if (status === 'fail') fail++;
-    else wait++;
-
-    const note = reportNotes[p.id] || '';
-    const statusEmoji = {ok:'✅ Başarılı', fail:'❌ Başarısız', wait:'⏳ Bekliyor'}[status];
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><strong>${escHtml(p.num)}</strong></td>
-      <td>${escHtml(p.title)}</td>
-      <td>${statusEmoji}</td>
-      <td><input class="report-note-input" type="text" value="${escHtml(note)}" placeholder="Not ekle..." data-id="${p.id}"></td>`;
-    tbody.appendChild(tr);
-
-    tr.querySelector('.report-note-input').addEventListener('input', function() {
-      reportNotes[p.id] = this.value;
-      saveAll();
-    });
-  });
-
-  document.getElementById('rptTotal').textContent = prompts.length;
-  document.getElementById('rptOk').textContent = ok;
-  document.getElementById('rptFail').textContent = fail;
-  document.getElementById('rptSkip').textContent = wait;
-  document.getElementById('reportDuration').textContent = 'Süre: ' + formatTime(timerSeconds);
-}
-
-document.getElementById('downloadReportBtn').addEventListener('click', () => {
-  const date = new Date().toLocaleDateString('tr-TR');
-  const rows = prompts.map(p => {
-    const s = stepStatuses[p.id] || 'wait';
-    const note = reportNotes[p.id] || '';
-    const sLabel = {ok:'✅ Başarılı', fail:'❌ Başarısız', wait:'⏳ Bekliyor'}[s];
-    return `<tr><td>${escHtml(p.num)}</td><td>${escHtml(p.title)}</td><td>${sLabel}</td><td>${escHtml(note)}</td></tr>`;
-  }).join('');
-
-  const ok = prompts.filter(p => (stepStatuses[p.id]||'wait')==='ok').length;
-  const fail = prompts.filter(p => (stepStatuses[p.id]||'wait')==='fail').length;
-  const wait = prompts.filter(p => (stepStatuses[p.id]||'wait')==='wait').length;
-
-  const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">
-<title>TestPilot Rapor — ${date}</title>
-<style>body{font-family:system-ui;padding:32px;max-width:900px;margin:auto}
-table{width:100%;border-collapse:collapse}th,td{padding:10px;border:1px solid #e2e8f0;text-align:left}
-th{background:#f8fafc}h1{color:#6366f1}
-.ok{color:#10b981}.fail{color:#ef4444}.wait{color:#f59e0b}
-.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
-.box{border:1px solid #e2e8f0;border-radius:8px;padding:16px;text-align:center}
-.num{font-size:28px;font-weight:700}</style></head><body>
-<h1>🎭 TestPilot POC — Test Raporu</h1>
-<p>Tarih: <strong>${date}</strong> &nbsp;|&nbsp; Süre: <strong>${formatTime(timerSeconds)}</strong></p>
-<div class="summary">
-<div class="box"><div class="num">${prompts.length}</div><div>Toplam</div></div>
-<div class="box"><div class="num ok">${ok}</div><div>Başarılı</div></div>
-<div class="box"><div class="num fail">${fail}</div><div>Başarısız</div></div>
-<div class="box"><div class="num wait">${wait}</div><div>Bekleniyor</div></div>
-</div>
-<table><thead><tr><th>Adım</th><th>Başlık</th><th>Durum</th><th>Not</th></tr></thead>
-<tbody>${rows}</tbody></table>
-<p style="margin-top:24px;color:#94a3b8;font-size:12px">TestPilot POC Dashboard tarafından oluşturuldu.</p>
-</body></html>`;
-
-  const blob = new Blob([html], {type:'text/html'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `testpilot-rapor-${date.replace(/\./g,'-')}.html`;
-  a.click();
 });
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
