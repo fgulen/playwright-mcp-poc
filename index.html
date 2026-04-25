@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TestPilot POC — Playwright MCP Dashboard</title>
+<style>
+:root {
+  --brand-primary: #6366f1;
+  --brand-hover: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --border: #e2e8f0;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --border: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  min-width: 900px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* HEADER */
+.header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-logo { font-weight: 700; font-size: 18px; color: var(--brand-primary); }
+.header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
+.save-indicator {
+  font-size: 12px;
+  color: var(--success);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.save-indicator.visible { opacity: 1; }
+
+/* TABS */
+.tab-nav {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  gap: 0;
+}
+.tab-btn {
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--brand-primary); border-bottom-color: var(--brand-primary); font-weight: 500; }
+
+.tab-content { display: none; padding: 24px; max-width: 1100px; margin: 0 auto; }
+.tab-content.active { display: block; }
+
+/* CARDS & PANELS */
+.card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* BUTTONS */
+.btn {
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s, border-color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn:hover { background: var(--bg-tertiary); }
+.btn-primary { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
+.btn-primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+.btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+.btn-danger:hover { background: #dc2626; border-color: #dc2626; }
+.btn-success { background: var(--success); color: #fff; border-color: var(--success); }
+.btn-success:hover { background: #059669; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-icon { padding: 5px 8px; }
+
+/* FORMS */
+input[type="text"], input[type="url"], input[type="time"], select, textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+}
+textarea { resize: vertical; }
+label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
+.form-row { display: grid; gap: 12px; margin-bottom: 12px; }
+.form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+/* CHECKLIST */
+.checklist { list-style: none; }
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist input[type="checkbox"] { width: auto; margin-top: 2px; cursor: pointer; accent-color: var(--brand-primary); }
+.check-label { cursor: pointer; }
+.check-label.done { text-decoration: line-through; color: var(--text-muted); }
+
+/* CODE BLOCKS */
+.code-block {
+  position: relative;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin: 8px 0;
+}
+.code-block pre {
+  padding: 12px;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+.copy-btn:hover { color: var(--brand-primary); }
+
+/* CONFIG TEXTAREA */
+.config-area {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  min-height: 100px;
+}
+
+/* PROMPT CARDS */
+.prompt-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s;
+}
+.prompt-card.dragging { opacity: 0.5; border-color: var(--brand-primary); }
+.prompt-card.drag-over { border-color: var(--brand-primary); border-style: dashed; }
+.prompt-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: grab;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.prompt-card-header.collapsed { border-bottom: none; border-radius: var(--radius); }
+.drag-handle { color: var(--text-muted); font-size: 16px; cursor: grab; user-select: none; }
+.prompt-num { font-weight: 700; color: var(--brand-primary); font-size: 13px; min-width: 38px; }
+.prompt-title-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-primary);
+  padding: 0;
+}
+.prompt-title-input:focus { outline: none; }
+.token-badge {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.prompt-card-body { padding: 12px 16px; }
+.prompt-textarea {
+  width: 100%;
+  min-height: 120px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+.prompt-textarea:focus { outline: none; border-color: var(--brand-primary); }
+
+/* TAGS */
+.tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.tag {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  user-select: none;
+}
+.tag.selected { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
+
+/* PROMPT TOOLBAR */
+.prompt-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.prompt-actions { display: flex; gap: 6px; align-items: center; }
+
+/* DROPDOWN */
+.dropdown { position: relative; display: inline-block; }
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 200;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  min-width: 180px;
+  padding: 4px 0;
+}
+.dropdown-menu.open { display: block; }
+.dropdown-item {
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.dropdown-item:hover { background: var(--bg-tertiary); }
+
+/* PLAN LIST */
+.plan-list { list-style: none; }
+.plan-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  gap: 10px;
+}
+.plan-item:hover { border-color: var(--brand-primary); background: var(--bg-tertiary); }
+.plan-item.active-plan { border-color: var(--brand-primary); background: var(--bg-secondary); }
+.plan-item-name { flex: 1; font-weight: 500; }
+.plan-item-meta { font-size: 11px; color: var(--text-muted); }
+.status-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.status-draft { background: #e2e8f0; color: #64748b; }
+.status-ready { background: #dbeafe; color: #1d4ed8; }
+.status-running { background: #fef9c3; color: #a16207; }
+.status-done { background: #d1fae5; color: #065f46; }
+.status-failed { background: #fee2e2; color: #991b1b; }
+
+/* RUN TAB */
+.run-prompt-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: var(--bg-primary);
+}
+.run-prompt-row input[type="checkbox"] { width: auto; accent-color: var(--brand-primary); }
+.run-prompt-label { flex: 1; font-size: 13px; }
+.step-status-btn {
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  font-size: 14px;
+}
+.step-ok { background: #d1fae5; }
+.step-fail { background: #fee2e2; }
+.step-wait { background: #fef9c3; }
+
+/* TIMER */
+.timer-display {
+  font-size: 32px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--brand-primary);
+  text-align: center;
+  padding: 16px;
+}
+
+/* REPORT TABLE */
+.report-table { width: 100%; border-collapse: collapse; }
+.report-table th, .report-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.report-table th { background: var(--bg-tertiary); font-weight: 600; color: var(--text-secondary); }
+.report-table tr:hover td { background: var(--bg-secondary); }
+.report-note-input {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  width: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* SUMMARY BOXES */
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.summary-box {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+.summary-box .num { font-size: 28px; font-weight: 700; }
+.summary-box .lbl { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.num-total { color: var(--brand-primary); }
+.num-ok { color: var(--success); }
+.num-fail { color: var(--danger); }
+.num-skip { color: var(--warning); }
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius);
+  padding: 24px;
+  min-width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.modal-title { font-weight: 600; font-size: 16px; margin-bottom: 16px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+/* MISC */
+.section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.text-muted { color: var(--text-muted); font-size: 12px; }
+.flex { display: flex; gap: 8px; align-items: center; }
+.flex-wrap { flex-wrap: wrap; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    🎭 TestPilot POC
+    <span>Playwright MCP Dashboard</span>
+  </div>
+  <div id="saveIndicator" class="save-indicator">✓ Kaydedildi</div>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="setup">🔧 Kurulum</button>
+  <button class="tab-btn" data-tab="plan">📋 Test Planı</button>
+  <button class="tab-btn" data-tab="prompts">💬 Prompt Yönetimi</button>
+  <button class="tab-btn" data-tab="run">🚀 Çalıştırma</button>
+  <button class="tab-btn" data-tab="report">📊 Rapor</button>
+</nav>
+
+<!-- TAB 1: KURULUM -->
+<div id="tab-setup" class="tab-content active">
+  <div class="card">
+    <div class="card-title">1. Playwright Extension Kur</div>
+    <p class="text-muted mb-8">VS Code Marketplace'ten Microsoft tarafından yayınlanan resmi eklentiyi yükle:</p>
+    <div class="code-block">
+      <pre>ms-playwright.playwright</pre>
+      <button class="copy-btn" data-copy="ms-playwright.playwright">Kopyala</button>
+    </div>
+    <p class="text-muted mt-8" style="font-size:12px;">VS Code → Extensions → "<strong>Playwright Test for VSCode</strong>" → Install</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">2. Playwright MCP Kur</div>
+    <p class="text-muted mb-8">Resmi kurulum kılavuzu:</p>
+    <a href="https://playwright.dev/docs/getting-started-mcp" target="_blank" class="btn btn-sm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+      🔗 playwright.dev/docs/getting-started-mcp
+    </a>
+    <div class="code-block mt-8">
+      <pre>npx @playwright/mcp@latest</pre>
+      <button class="copy-btn" data-copy="npx @playwright/mcp@latest">Kopyala</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">✅ Kurulum Kontrol Listesi</div>
+    <ul class="checklist" id="setupChecklist">
+      <li>
+        <input type="checkbox" id="chk1" data-key="chk1">
+        <label class="check-label" for="chk1">Playwright extension marketplace'ten yüklendi</label>
+      </li>
+      <li>
+        <input type="checkbox" id="chk2" data-key="chk2">
+        <label class="check-label" for="chk2">Playwright MCP kuruldu ve yapılandırıldı</label>
+      </li>
+      <li>
+        <input type="checkbox" id="chk3" data-key="chk3">
+        <label class="check-label" for="chk3">IDE yeniden başlatıldı, MCP bağlantısı doğrulandı</label>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- TAB 2: TEST PLANI -->
+<div id="tab-plan" class="tab-content">
+  <div style="display:grid;grid-template-columns:340px 1fr;gap:20px;">
+    <div>
+      <div class="card">
+        <div class="card-title">📋 Kayıtlı Planlar</div>
+        <ul class="plan-list" id="planList">
+          <li class="empty-state" style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Henüz plan yok</li>
+        </ul>
+        <button class="btn btn-primary" id="newPlanBtn" style="width:100%;margin-top:8px;">+ Yeni Plan</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">✏️ Plan Düzenle</div>
+        <div class="form-row cols-2">
+          <div>
+            <label>Plan No</label>
+            <input type="text" id="planId" placeholder="TP-001">
+          </div>
+          <div>
+            <label>Durum</label>
+            <select id="planStatus">
+              <option value="draft">Draft</option>
+              <option value="ready">Hazır</option>
+              <option value="running">Çalışıyor</option>
+              <option value="done">Tamamlandı</option>
+              <option value="failed">Başarısız</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Test Adı</label>
+            <input type="text" id="planName" placeholder="Örn: DB Gidiş-Dönüş Testi">
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Hedef URL</label>
+            <input type="url" id="planUrl" placeholder="https://www.bahn.de">
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Açıklama</label>
+            <textarea id="planDesc" rows="4" placeholder="Senaryo açıklaması..."></textarea>
+          </div>
+        </div>
+        <div class="flex">
+          <button class="btn btn-primary" id="savePlanBtn">💾 Kaydet</button>
+          <button class="btn btn-danger btn-sm" id="deletePlanBtn" style="display:none;">🗑️ Sil</button>
+          <span id="planDate" class="text-muted" style="margin-left:auto;"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: PROMPT YÖNETİMİ -->
+<div id="tab-prompts" class="tab-content">
+  <div class="prompt-toolbar">
+    <div class="prompt-actions">
+      <button class="btn btn-primary" id="addPromptBtn">+ Prompt Ekle</button>
+      <div class="dropdown" id="templateDropdown">
+        <button class="btn" id="templateBtn">Şablondan Ekle ▾</button>
+        <div class="dropdown-menu" id="templateMenu">
+          <div class="dropdown-item" data-tpl="navigation">Navigation</div>
+          <div class="dropdown-item" data-tpl="form">Form Doldur</div>
+          <div class="dropdown-item" data-tpl="assertion">Assertion</div>
+          <div class="dropdown-item" data-tpl="screenshot">Screenshot & Rapor</div>
+          <div class="dropdown-item" data-tpl="login">Login</div>
+        </div>
+      </div>
+    </div>
+    <div class="prompt-actions" style="margin-left:auto;">
+      <button class="btn" id="resetPromptsBtn">↺ Varsayılanlara Sıfırla</button>
+      <button class="btn" id="copyAllBtn">📋 Tümünü Kopyala</button>
+      <button class="btn" id="exportJsonBtn">📤 JSON Dışa Aktar</button>
+      <button class="btn" id="importJsonBtn">📥 JSON İçe Aktar</button>
+      <input type="file" id="importFileInput" accept=".json" style="display:none;">
+    </div>
+  </div>
+  <div id="promptList"></div>
+</div>
+
+<!-- TAB 4: ÇALIŞTIRMA -->
+<div id="tab-run" class="tab-content">
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;">
+    <div>
+      <div class="card">
+        <div class="card-title">🎯 Prompt Seçimi</div>
+        <div class="flex mb-8">
+          <button class="btn btn-sm" id="selectAllRun">Tümünü Seç</button>
+          <button class="btn btn-sm" id="deselectAllRun">Seçimi Temizle</button>
+        </div>
+        <div id="runPromptList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🖥️ Sistem Promptu</div>
+        <textarea id="systemPrompt" rows="10"></textarea>
+        <div class="flex mt-8">
+          <button class="btn btn-primary" id="copyForCline">Cline için Kopyala</button>
+          <button class="btn btn-primary" id="copyForKiro">Kiro için Kopyala</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📝 Manuel Log</div>
+        <textarea id="manualLog" rows="6" placeholder="Gözlemler, notlar..."></textarea>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">⏱️ Süre Sayacı</div>
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        <div class="flex" style="justify-content:center;gap:12px;">
+          <button class="btn btn-success" id="timerStart">▶ Başlat</button>
+          <button class="btn btn-danger" id="timerStop">⏹ Durdur</button>
+          <button class="btn" id="timerReset">↺ Sıfırla</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📌 Adım Durumları</div>
+        <div id="stepStatusList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 5: RAPOR -->
+<div id="tab-report" class="tab-content">
+  <div class="summary-grid">
+    <div class="summary-box">
+      <div class="num num-total" id="rptTotal">0</div>
+      <div class="lbl">Toplam</div>
+    </div>
+    <div class="summary-box">
+      <div class="num num-ok" id="rptOk">0</div>
+      <div class="lbl">Başarılı</div>
+    </div>
+    <div class="summary-box">
+      <div class="num num-fail" id="rptFail">0</div>
+      <div class="lbl">Başarısız</div>
+    </div>
+    <div class="summary-box">
+      <div class="num num-skip" id="rptSkip">0</div>
+      <div class="lbl">Atlandı</div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="card-title" style="margin-bottom:0;">📊 Test Sonuçları</div>
+      <div class="flex">
+        <span class="text-muted" id="reportDuration">Süre: —</span>
+        <button class="btn btn-primary btn-sm" id="downloadReportBtn">⬇️ HTML İndir</button>
+      </div>
+    </div>
+    <table class="report-table" id="reportTable">
+      <thead>
+        <tr>
+          <th style="width:60px;">Adım</th>
+          <th>Başlık</th>
+          <th style="width:100px;">Durum</th>
+          <th>Not</th>
+        </tr>
+      </thead>
+      <tbody id="reportBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL (JSON Import) -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">JSON İçe Aktar</div>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn" id="modalCancel">İptal</button>
+      <button class="btn btn-primary" id="modalConfirm">Onayla</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STORAGE ────────────────────────────────────────────────────────────────
+const PREFIX = 'testpilot_';
+const store = {
+  get: (k, def) => { try { const v = localStorage.getItem(PREFIX+k); return v ? JSON.parse(v) : def; } catch { return def; } },
+  set: (k, v) => { try { localStorage.setItem(PREFIX+k, JSON.stringify(v)); } catch {} }
+};
+
+let saveTimer;
+function triggerSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const el = document.getElementById('saveIndicator');
+    el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 1500);
+  }, 500);
+}
+
+// ─── DEFAULT PROMPTS ─────────────────────────────────────────────────────────
+const DEFAULT_PROMPTS = [
+  {
+    id: 'tp_p01', num: 'P-01', title: 'Landing Page Doğrulama',
+    content: `**VERİLEN:**
+- Playwright MCP aktif ve bağlı
+- Tarayıcı penceresi açık
+
+**ADIMLAR:**
+1. https://www.bahn.de adresine git
+2. Cookie banner varsa kapat:
+   - "Nur notwendige Cookies" veya "Only allow necessary cookies" butonunu tıkla
+   - Banner yoksa atla (try/catch ile)
+3. Ana arama formunu kontrol et:
+   - input[name="quickFinderBasic-von"] görünür mü?
+   - input[name="quickFinderBasic-nach"] görünür mü?
+4. Sayfanın başlığını (document.title) raporla
+5. Mevcut dil ayarını raporla (document.documentElement.lang)
+6. Screenshot al: "p01_landing.png"
+
+**DOĞRULAMA:**
+- ✅ Von ve Nach input alanları görünür
+- ✅ document.documentElement.lang === "de"
+- ✅ p01_landing.png kaydedildi
+
+📋 ÖZET: bahn.de açılıyor, cookie banner kapatılıyor, arama formu görünürlüğü doğrulanıyor.
+
+NOT: Cookie banner bir <div> overlay'dir — tüm pointer event'leri intercept eder. Banner kapatılmadan form alanlarına tıklanamaz.`,
+    tags: ['navigation', 'assertion']
+  },
+  {
+    id: 'tp_p02', num: 'P-02', title: 'Arama Formu Doldurma',
+    content: `**VERİLEN:**
+- P-01 tamamlandı
+- bahn.de açık, cookie banner kapalı, arama formu görünür
+
+**ADIMLAR:**
+1. Von (Kalkış):
+   - input[name="quickFinderBasic-von"] → click({ force: true })
+   - "Köln Hbf" yaz → [role="option"] listesi açılınca ilk seçeneği tıkla
+   - Değerin "Köln Hbf" olduğunu doğrula
+2. Nach (Varış):
+   - input[name="quickFinderBasic-nach"] → click({ force: true })
+   - "Berlin Hbf" yaz → listeden ilk seçeneği tıkla
+3. Datum/Uhrzeit (Hinfahrt):
+   - .quick-finder-options__hinfahrt → JS click ile tıkla
+   - Dialog açılınca Vue-safe yöntemle doldur:
+     * nativeInputValueSetter + dispatchEvent('input') + dispatchEvent('change')
+     * Tag: yarın, Monat: bu ay, Jahr: bu yıl, Stunden: 08, Minuten: 00
+   - [data-test-id="quick-finder-save-button"] → JS click ile onayla
+4. Screenshot al: "p02_form_filled.png"
+
+**DOĞRULAMA:**
+- ✅ Von alanı "Köln Hbf" içeriyor
+- ✅ Nach alanı "Berlin Hbf" içeriyor
+- ✅ Hinfahrt butonu "ab 08:00" metnini içeriyor
+- ✅ p02_form_filled.png kaydedildi
+
+📋 ÖZET: Kalkış/varış istasyonları ve tarih/saat form'a girildi, Hinfahrt onaylandı.
+
+NOT: Von/Nach üzerinde overlay olabilir → click({ force: true }) kullan.
+Tarih inputları Vue spinbutton'dır, fill() çalışmaz → HTMLInputElement.prototype.value setter gerekir.
+Hinfahrt dialog butonu: .quick-finder-options__hinfahrt (JS click).`,
+    tags: ['form', 'validation']
+  },
+  {
+    id: 'tp_p03', num: 'P-03', title: 'Gelişmiş Filtreler',
+    content: `**VERİLEN:**
+- P-02 tamamlandı
+- Von: "Köln Hbf", Nach: "Berlin Hbf", tarih/saat dolu
+
+**ADIMLAR:**
+1. 1. Klasse seç:
+   - button._segment-option-KLASSE_1 → tıkla
+   - aria-selected="true" olduğunu kontrol et
+2. Verkehrsmittel filtresi (sadece ICE + IC/EC):
+   - button.SearchVerkehrsmittel__dialogBtn → tıkla
+   - switch-2'den switch-9'a: label[for="switch-N--db-web-switch"] → tıkla (label'a, toggle span'a değil!)
+   - Übernehmen → JS click ile onayla
+   - Buton "Benutzerdefiniert" içermeli
+3. BahnCard 25, 1. Klasse:
+   - "Person" içeren buton → JS click (Reisende dialog aç)
+   - .DBWebSelectButton[hasText="Ermäßigung"] → click (dropdown aç)
+   - [role="option"][aria-label*="BahnCard 25, 1. Klasse"] → boundingBox al → page.mouse.click(cx, cy)
+   - KRİTİK: .DBWebSelectButton[hasText="Reisende"] → tıkla (dropdown kapat — Übernehmen'i kapatıyor!)
+   - [data-test-id="quick-finder-save-button"] → boundingBox → page.mouse.click(cx, cy)
+4. Rückfahrt (bugün + 4 gün, 18:00):
+   - .quick-finder-options__rueckfahrt → JS click
+   - Takvimden hedef günü: .db-web-date-picker-calendar-day listesinde index=(gün+1) → JS click
+   - Vue-safe: Stunden=18, Minuten=00
+   - dialog[open] içindeki [data-test-id="undefined-save-button"] → tıkla
+5. Screenshot al: "p03_filters_applied.png"
+
+**DOĞRULAMA:**
+- ✅ 1. Klasse butonu aria-selected="true"
+- ✅ Verkehrsmittel butonu "Benutzerdefiniert" içeriyor
+- ✅ "BahnCard 25" içeren buton görünür
+- ✅ Rückfahrt butonu "ab 18:00" içeriyor
+- ✅ p03_filters_applied.png kaydedildi
+
+📋 ÖZET: 1. Klasse, ICE-only filtresi, BahnCard 25 ve dönüş bileti yapılandırıldı.
+
+NOT: BahnCard için dispatchEvent çalışmaz → page.mouse.click() zorunlu.
+BahnCard seçimi sonrası dropdown Übernehmen'i kapatır → Önce "Reisende" header'ına tıkla.
+Rückfahrt save button test-id: "undefined-save-button" (Hinfahrt'tan farklı!).`,
+    tags: ['form', 'validation']
+  },
+  {
+    id: 'tp_p04', num: 'P-04', title: 'Arama Sonuçları Analizi',
+    content: `**VERİLEN:**
+- P-03 tamamlandı
+- Tüm filtreler uygulandı: 1. Klasse, ICE/IC-EC, BahnCard 25, dönüş bileti
+
+**ADIMLAR:**
+1. button.quick-finder-basic__search-btn--desktop → tıkla
+2. Sonuçların yüklenmesini bekle:
+   - URL **/suche** pattern'ini bekle
+   - /\\d{2}:\\d{2}[\\u2013-]\\d{2}:\\d{2}/ regex'i ile bağlantı kartlarını bekle (en-dash U+2013!)
+   - Timeout: 40 saniye
+3. Şunları raporla:
+   - Kaç bağlantı listelendi? (unique time-range sayısı)
+   - İlk 3 bağlantının kalkış-varış saatleri ve süreleri
+   - En düşük fiyat (ab X,XX € pattern)
+   - ICE ibaresi var mı? (ICE \\d+ pattern)
+   - "ausgebucht" uyarısı var mı?
+   - Aktarmalı/direkt sefer dağılımı ("Umstieg" içeren kartlar)
+4. Screenshot al: "p04_results.png"
+
+**DOĞRULAMA:**
+- ✅ URL "/suche" içeriyor
+- ✅ En az 1 bağlantı listelendi
+- ✅ İlk 3 bağlantının saatleri ve süreleri raporlandı
+- ✅ Fiyat bilgisi alındı
+- ✅ p04_results.png kaydedildi
+
+📋 ÖZET: Arama tetiklendi, sonuç sayfası yüklendi, bağlantı detayları ve fiyatlar raporlandı.
+
+NOT: Zaman ayırıcısı en-dash (–, U+2013) — normal tire ile regex eşleşmez.
+Test timeout en az 120 saniye olmalı. Suchen butonu: .quick-finder-basic__search-btn--desktop (desktop class kullan, 2 buton var).`,
+    tags: ['assertion', 'reporting']
+  },
+  {
+    id: 'tp_p05', num: 'P-05', title: 'Bilet Seçimi & Koltuk',
+    content: `**VERİLEN:**
+- P-04 tamamlandı
+- Arama sonuçları görünür, URL /suche içeriyor
+
+**ADIMLAR:**
+1. Hinfahrt seç:
+   - İlk görünür "Weiter" butonuna JS click
+   - 5 saniye bekle (navigasyon)
+2. Rückfahrt seç:
+   - waitForURL('**/rueckfahrt**')
+   - Sonuçlar yüklenince ilk "Weiter" butonuna JS click
+3. Angebote sayfası (/buchung/fahrplan/angebotsauswahl):
+   - "Super Sparpreis" + "Auswählen" içeren butona JS click
+   - "Sitzplatzreservierung" içeren label'a JS click (aktif et)
+   - "Sitzplatz auswählen" butonuna JS click
+4. GSD iframe doğrula:
+   - iframe.db-web-dialog-gsd-iframe__iframe görünür mü?
+   - iframe içinde "ICE" metni var mı?
+5. Screenshot al: "p05_detail.png"
+
+**DOĞRULAMA:**
+- ✅ Rückfahrt sayfası yüklendi (/rueckfahrt)
+- ✅ Angebote sayfasına geçildi
+- ✅ Sitzplatzreservierung aktif edildi
+- ✅ GSD iframe görünür ve "ICE" içeriyor
+- ✅ p05_detail.png kaydedildi
+
+🚨 GÜVENLİK SINIRI: "Kaufen", "Bezahlen", "Weiter zur Buchung" butonlarına TIKLAMA. Varlıklarını logla, tıklama.
+
+📋 ÖZET: Hinfahrt + Rückfahrt seçildi, Super Sparpreis + koltuk rezervasyonu aktif edildi, GSD iframe doğrulandı.
+
+NOT: Toplam beklenen fiyat: 236,98 € (H+R) + 13,80 € (Sitzplatz). GSD iframe same-origin → frameLocator ile erişilebilir.`,
+    tags: ['navigation', 'assertion']
+  },
+  {
+    id: 'tp_p06', num: 'P-06', title: 'Fiyat & Tarife Analizi',
+    content: `**VERİLEN:**
+- P-05 tamamlandı
+- Angebote / fiyat seçim sayfası açık
+
+**ADIMLAR:**
+1. Tarife listesi:
+   - Mevcut tüm tarifeleri bul (Super Sparpreis, Sparpreis, Flexpreis vb.)
+   - Her tarife için not al: Fiyat (€), İptal/değişiklik koşulları, Müsaitlik durumu
+2. BahnCard indirim doğrulama:
+   - "25%" veya "BahnCard" ibaresi fiyat yanında görünüyor mu?
+   - BahnCard 25 indiriminin uygulandığını doğrula
+3. Toplam hesaplama:
+   - Gidiş Sparpreis fiyatı: [X] €
+   - Dönüş Sparpreis fiyatı: [X] €
+   - Koltuk rezervasyonu: [X] €
+   - TOPLAM: [X] €
+4. "Sparpreis" tarifesini seç (sadece seç, devam etme)
+5. Screenshot al: "p06_pricing.png"
+
+**DOĞRULAMA:**
+- ✅ En az 2 tarife bulundu ve listelendi
+- ✅ BahnCard 25 indirimi görünür
+- ✅ Toplam fiyat hesaplandı ve raporlandı
+- ✅ Sparpreis seçili (devam edilmedi)
+- ✅ p06_pricing.png kaydedildi
+
+📋 ÖZET: Tüm tarife seçenekleri analiz edildi, BahnCard indirimi doğrulandı, Sparpreis seçildi.`,
+    tags: ['assertion', 'reporting']
+  },
+  {
+    id: 'tp_p07', num: 'P-07', title: 'Güvenlik Sınırı & Özet Rapor',
+    content: `**VERİLEN:**
+- P-01..P-06 tüm adımlar çalıştırıldı
+- Mevcut URL: Sparpreis seçilmiş, satın alma öncesi son ekran
+
+**ADIMLAR:**
+1. GÜVENLİK SINIRI: "Weiter zur Buchung", "Kaufen", "Bezahlen" butonlarını TIKLAMA — sadece varlıklarını logla
+2. Aşağıdaki özet raporu oluştur:
+
+TEST SENARYOSU ÖZET RAPORU
+Tarih: [bugünün tarihi]
+Senaryo: Köln Hbf → Berlin Hbf (Hin- und Rückfahrt, 1. Klasse, ICE, BahnCard 25)
+Tarife: Sparpreis
+
+ADIM SONUÇLARI:
+P-01 Landing Page    : [✓/✗] — [not]
+P-02 Form Doldurma   : [✓/✗] — [not]
+P-03 Filtreler       : [✓/✗] — [not]
+P-04 Arama Sonuçları : [✓/✗] — [not]
+P-05 Bilet Seçimi    : [✓/✗] — [not]
+P-06 Fiyat Analizi   : [✓/✗] — [not]
+P-07 Güvenlik Sınırı : ✓ Korundu
+
+EN DÜŞÜK FİYAT: [X] € (Sparpreis, 1. Klasse, BahnCard 25)
+BULUNAN SORUNLAR: [varsa listele, yoksa "Yok"]
+
+3. Tüm tarayıcı sekmelerini kapat
+
+**DOĞRULAMA:**
+- ✅ Satın alma butonu tıklanmadı
+- ✅ Tüm adımlar raporlandı
+- ✅ Toplam fiyat raporlandı
+
+📋 ÖZET: Test tamamlandı, güvenlik sınırı korundu, tüm adımların sonuçları özetlendi.`,
+    tags: ['reporting']
+  },
+  {
+    id: 'tp_p08', num: 'P-08', title: 'Framework Kodu Oluştur',
+    content: `**VERİLEN:**
+- P-01..P-07 tamamlandı ve doğrulandı
+- FRAMEWORK.md dosyası proje kök dizininde mevcut
+
+**ADIMLAR:**
+1. FRAMEWORK.md dosyasını oku (proje kök dizininde)
+2. playwright-framework/ klasörünü oluştur
+3. Şu dosyaları FRAMEWORK.md §Output Structure sıralamasıyla üret:
+   - .env (BASE_URL=https://www.bahn.de, PURCHASE_GUARD=true)
+   - .env.example (tüm değerler boş/template)
+   - .gitignore
+   - package.json
+   - playwright.config.ts (video:on, viewport:null, --start-maximized)
+   - global-setup.ts (PURCHASE_GUARD kontrolü)
+   - global-teardown.ts
+   - pages/BasePage.ts
+   - pages/BahnSearchPage.ts (P-01/P-02/P-03 adımları — POM)
+   - pages/BahnResultsPage.ts (P-04 adımları — POM)
+   - pages/BahnDetailPage.ts (P-05/P-06 adımları — POM)
+   - tests/TP-001/db-booking-flow.spec.ts (P-01..P-07 her biri ayrı test() bloğu)
+   - utils/reporter.ts (Markdown reporter — FRAMEWORK.md §REPORT.md Generation'dan)
+   - utils/logger.ts
+   - utils/screenshotter.ts
+   - fixtures/test-fixtures.ts
+   - reports/.gitkeep
+   - README.md (Quick Start dahil)
+
+**DOĞRULAMA:**
+- ✅ playwright-framework/ klasörü ve tüm alt klasörler oluşturuldu
+- ✅ npm install başarılı (package.json geçerli)
+- ✅ PURCHASE_GUARD=true tüm dosyalarda değiştirilmedi
+- ✅ P-01..P-07 her biri ayrı test() bloğu (birleştirme!)
+- ✅ Video her zaman açık (video:'off' yok)
+- ✅ README.md Quick Start adımlarını içeriyor
+
+📋 ÖZET: P-01..P-07 senaryosu tam Playwright TypeScript framework'e dönüştürüldü — POM yapısı, video kaydı, Markdown reporter ve güvenlik sınırı dahil.
+
+ÖNEMLİ KISITLAMALAR (FRAMEWORK.md §Generation Constraints):
+- Hardcoded credentials yasak — .env'den oku
+- PURCHASE_GUARD=true asla değiştirme
+- TypeScript only, JS dosyası oluşturma
+- third-party helper yok — sadece @playwright/test + dotenv
+- Her prompt ayrı test() bloğu — birleştirme`,
+    tags: ['reporting']
+  }
+];
+
+const TEMPLATES = {
+  navigation: { title: 'Navigation Şablonu', content: `[HEDEF_URL] adresine git ve şunları doğrula:\n1. Sayfa tam yüklendi (network idle)\n2. Ana içerik görünür\n3. Sayfa başlığı: [BEKLENEN_BAŞLIK]\nScreenshot al: [DOSYA_ADI].png`, tags: ['navigation'] },
+  form: { title: 'Form Doldur Şablonu', content: `Sayfadaki formu şu şekilde doldur:\n- Alan 1 ([SELECTOR]): [DEĞER]\n- Alan 2 ([SELECTOR]): [DEĞER]\n- Dropdown ([SELECTOR]): [SEÇİLECEK_DEĞER]\nHer alan sonrası doğrulama yap.\nFormu gönder ve sonucu raporla.`, tags: ['form'] },
+  assertion: { title: 'Assertion Şablonu', content: `Şu koşulları doğrula:\n- [ ] [ELEMENT] görünür durumda\n- [ ] [TEXT] sayfada mevcut\n- [ ] URL şunu içeriyor: [URL_PARÇASI]\n- [ ] [ELEMENT] tıklanabilir durumda\nBaşarısız koşul varsa screenshot al.`, tags: ['assertion'] },
+  screenshot: { title: 'Screenshot & Rapor Şablonu', content: `Mevcut sayfanın screenshot'ını al: [DOSYA_ADI].png\nŞu bilgileri raporla:\n- Sayfa başlığı\n- Mevcut URL\n- Görünür hata mesajı var mı?\n- [ÖZEL_KONTROL]`, tags: ['reporting'] },
+  login: { title: 'Login Şablonu', content: `[URL] adresine git ve giriş yap:\nUYARI: Test kullanıcısı kullan, gerçek kimlik bilgisi girme.\n- Kullanıcı adı: [TEST_USER]\n- Şifre: [TEST_PASS]\nBaşarılı giriş sonrası: [BEKLENEN_SAYFA] sayfasına yönlendirildiğini doğrula.`, tags: ['form'] }
+};
+
+const DEFAULT_SYSTEM_PROMPT = `Sen bir Playwright test otomasyon uzmanısın ve bir KI-Testinfrastruktur POC'u için çalışıyorsun.
+
+GÖREV: Verilen test promptlarını sırayla çalıştırarak Deutsche Bahn web sitesini (bahn.de) test et.
+
+KURALLAR:
+1. Her adımı açıkça logla: "Adım X başlıyor...", "Adım X tamamlandı."
+2. Önemli durumlarda screenshot al (hata, beklenmeyen UI, sonuç sayfası)
+3. SATIN ALMA SINIRI: Hiçbir koşulda ödeme veya satın alma adımına geçme
+4. Timeout: Her aksiyonda maksimum 10 saniye bekle
+5. Retry: Başarısız aksiyonu 2 kez dene, sonra hata olarak logla
+6. Raporlama: Türkçe raporla, teknik terimler (ICE, BahnCard, Sparpreis) orijinal haliyle kalsın
+7. Autocomplete: Form alanlarına yazarken dropdown açılmasını bekle, sonra seç
+8. Tarih: Dinamik olarak hesapla — sabit tarih yazma
+
+BAŞARI KRİTERİ:
+7 adımın tamamı hatasız çalışırsa senaryo başarılı.
+Herhangi bir adım başarısız olursa, hatayı logla ve sonraki adıma geç.
+
+DEMO NOTU:
+Bu bir güvenli test ortamıdır. Kullanıcı verisi girilmez, ödeme yapılmaz.`;
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let prompts = store.get('prompts', null);
+if (!prompts || prompts.length === 0) { prompts = DEFAULT_PROMPTS.map(p => ({...p})); }
+
+let plans = store.get('plans', []);
+let currentPlanId = store.get('currentPlanId', null);
+let stepStatuses = store.get('stepStatuses', {});
+let runChecked = store.get('runChecked', {});
+let timerSeconds = store.get('timerSeconds', 0);
+let timerRunning = false;
+let timerInterval = null;
+let reportNotes = store.get('reportNotes', {});
+
+// ─── SAVE ─────────────────────────────────────────────────────────────────────
+function saveAll() {
+  store.set('prompts', prompts);
+  store.set('plans', plans);
+  store.set('currentPlanId', currentPlanId);
+  store.set('stepStatuses', stepStatuses);
+  store.set('runChecked', runChecked);
+  store.set('timerSeconds', timerSeconds);
+  store.set('reportNotes', reportNotes);
+  triggerSave();
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'run') renderRunTab();
+    if (btn.dataset.tab === 'report') renderReport();
+  });
+});
+
+// ─── COPY UTILITY ─────────────────────────────────────────────────────────────
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Kopyalandı';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+// ─── TAB 1: SETUP ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', () => copyText(btn.dataset.copy, btn));
+});
+
+
+// Checklist restore + save
+const chkKeys = ['chk1','chk2','chk3','chk4','chk5','chk6','chk7'];
+chkKeys.forEach(k => {
+  const el = document.getElementById(k);
+  const lbl = el.nextElementSibling;
+  const saved = store.get(k, false);
+  el.checked = saved;
+  if (saved) lbl.classList.add('done');
+  el.addEventListener('change', () => {
+    store.set(k, el.checked);
+    el.checked ? lbl.classList.add('done') : lbl.classList.remove('done');
+    triggerSave();
+  });
+});
+
+// ─── TAB 2: TEST PLANI ────────────────────────────────────────────────────────
+function genPlanId() {
+  const n = plans.length + 1;
+  return 'TP-' + String(n).padStart(3, '0');
+}
+
+function renderPlanList() {
+  const ul = document.getElementById('planList');
+  if (plans.length === 0) {
+    ul.innerHTML = '<li style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Henüz plan yok</li>';
+    return;
+  }
+  ul.innerHTML = '';
+  plans.forEach(p => {
+    const li = document.createElement('li');
+    li.className = 'plan-item' + (p.id === currentPlanId ? ' active-plan' : '');
+    li.dataset.id = p.id;
+    li.innerHTML = `
+      <div class="plan-item-name">${escHtml(p.planId || p.id)} — ${escHtml(p.name || '(adsız)')}</div>
+      <span class="status-badge status-${p.status}">${statusLabel(p.status)}</span>`;
+    li.addEventListener('click', () => loadPlan(p.id));
+    ul.appendChild(li);
+  });
+}
+
+function statusLabel(s) {
+  return {draft:'Draft',ready:'Hazır',running:'Çalışıyor',done:'Tamamlandı',failed:'Başarısız'}[s] || s;
+}
+
+function loadPlan(id) {
+  currentPlanId = id;
+  const p = plans.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('planId').value = p.planId || '';
+  document.getElementById('planName').value = p.name || '';
+  document.getElementById('planUrl').value = p.url || '';
+  document.getElementById('planDesc').value = p.desc || '';
+  document.getElementById('planStatus').value = p.status || 'draft';
+  document.getElementById('planDate').textContent = p.created ? 'Oluşturulma: ' + p.created : '';
+  document.getElementById('deletePlanBtn').style.display = '';
+  renderPlanList();
+  saveAll();
+}
+
+function clearPlanForm() {
+  currentPlanId = null;
+  document.getElementById('planId').value = genPlanId();
+  document.getElementById('planName').value = '';
+  document.getElementById('planUrl').value = 'https://www.bahn.de';
+  document.getElementById('planDesc').value = '';
+  document.getElementById('planStatus').value = 'draft';
+  document.getElementById('planDate').textContent = '';
+  document.getElementById('deletePlanBtn').style.display = 'none';
+  renderPlanList();
+}
+
+document.getElementById('newPlanBtn').addEventListener('click', clearPlanForm);
+
+document.getElementById('savePlanBtn').addEventListener('click', () => {
+  const planId = document.getElementById('planId').value.trim() || genPlanId();
+  const name = document.getElementById('planName').value.trim();
+  const url = document.getElementById('planUrl').value.trim();
+  const desc = document.getElementById('planDesc').value.trim();
+  const status = document.getElementById('planStatus').value;
+
+  if (currentPlanId) {
+    const p = plans.find(x => x.id === currentPlanId);
+    if (p) { Object.assign(p, {planId, name, url, desc, status}); }
+  } else {
+    const id = 'plan_' + Date.now();
+    currentPlanId = id;
+    plans.push({ id, planId, name, url, desc, status, created: new Date().toLocaleDateString('tr-TR') });
+    document.getElementById('deletePlanBtn').style.display = '';
+  }
+  renderPlanList();
+  saveAll();
+});
+
+document.getElementById('deletePlanBtn').addEventListener('click', () => {
+  if (!currentPlanId) return;
+  plans = plans.filter(p => p.id !== currentPlanId);
+  clearPlanForm();
+  saveAll();
+});
+
+// Init plan tab
+clearPlanForm();
+renderPlanList();
+
+// ─── TAB 3: PROMPTS ──────────────────────────────────────────────────────────
+const TAGS_ALL = ['navigation','form','validation','assertion','reporting'];
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function estimateTokens(text) {
+  return Math.ceil(text.length / 4);
+}
+
+function renderPrompts() {
+  const container = document.getElementById('promptList');
+  container.innerHTML = '';
+  prompts.forEach((p, idx) => {
+    const card = document.createElement('div');
+    card.className = 'prompt-card';
+    card.draggable = true;
+    card.dataset.id = p.id;
+
+    const collapsed = store.get('collapsed_' + p.id, false);
+    const tokens = estimateTokens(p.content || '');
+    const tagsHtml = TAGS_ALL.map(t =>
+      `<span class="tag${(p.tags||[]).includes(t)?' selected':''}" data-tag="${t}">${t}</span>`
+    ).join('');
+
+    card.innerHTML = `
+      <div class="prompt-card-header${collapsed?' collapsed':''}" data-id="${p.id}">
+        <span class="drag-handle">⠿</span>
+        <span class="prompt-num">${escHtml(p.num || 'P-??')}</span>
+        <input class="prompt-title-input" type="text" value="${escHtml(p.title||'')}" placeholder="Başlık..." data-field="title" data-id="${p.id}">
+        <span class="token-badge">~${tokens} token</span>
+        <button class="btn btn-icon btn-sm collapse-btn" data-id="${p.id}" title="${collapsed?'Aç':'Daralt'}">${collapsed?'🔼':'🔽'}</button>
+        <button class="btn btn-icon btn-sm" data-action="copy" data-id="${p.id}" title="Kopyala">📋</button>
+        <button class="btn btn-icon btn-sm" data-action="delete" data-id="${p.id}" title="Sil">🗑️</button>
+      </div>
+      <div class="prompt-card-body" style="${collapsed?'display:none':''}">
+        <textarea class="prompt-textarea" data-field="content" data-id="${p.id}" placeholder="Prompt içeriği...">${escHtml(p.content||'')}</textarea>
+        <div class="tag-row" data-id="${p.id}">${tagsHtml}</div>
+      </div>`;
+
+    container.appendChild(card);
+    setupDragEvents(card);
+  });
+  setupPromptEvents();
+}
+
+function setupPromptEvents() {
+  const container = document.getElementById('promptList');
+
+  // Delegated events
+  container.querySelectorAll('[data-field="title"]').forEach(el => {
+    el.addEventListener('input', () => {
+      const p = prompts.find(x => x.id === el.dataset.id);
+      if (p) { p.title = el.value; saveAll(); }
+    });
+  });
+
+  container.querySelectorAll('[data-field="content"]').forEach(el => {
+    el.addEventListener('input', () => {
+      const p = prompts.find(x => x.id === el.dataset.id);
+      if (p) {
+        p.content = el.value;
+        const badge = el.closest('.prompt-card').querySelector('.token-badge');
+        if (badge) badge.textContent = '~' + estimateTokens(el.value) + ' token';
+        saveAll();
+      }
+    });
+    // Auto-grow
+    el.addEventListener('input', () => {
+      el.style.height = 'auto';
+      el.style.height = Math.max(120, el.scrollHeight) + 'px';
+    });
+  });
+
+  container.querySelectorAll('.collapse-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const card = btn.closest('.prompt-card');
+      const body = card.querySelector('.prompt-card-body');
+      const header = card.querySelector('.prompt-card-header');
+      const collapsed = body.style.display === 'none';
+      body.style.display = collapsed ? '' : 'none';
+      btn.textContent = collapsed ? '🔽' : '🔼';
+      header.classList.toggle('collapsed', !collapsed);
+      store.set('collapsed_' + id, !collapsed);
+    });
+  });
+
+  container.querySelectorAll('[data-action="copy"]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const p = prompts.find(x => x.id === btn.dataset.id);
+      if (p) copyText(p.content || '', btn);
+    });
+  });
+
+  container.querySelectorAll('[data-action="delete"]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      prompts = prompts.filter(x => x.id !== btn.dataset.id);
+      renumberPrompts();
+      renderPrompts();
+      saveAll();
+    });
+  });
+
+  container.querySelectorAll('.tag-row').forEach(row => {
+    row.addEventListener('click', e => {
+      const tag = e.target.dataset.tag;
+      if (!tag) return;
+      const id = row.dataset.id;
+      const p = prompts.find(x => x.id === id);
+      if (!p) return;
+      p.tags = p.tags || [];
+      if (p.tags.includes(tag)) { p.tags = p.tags.filter(t => t !== tag); }
+      else { p.tags.push(tag); }
+      e.target.classList.toggle('selected');
+      saveAll();
+    });
+  });
+}
+
+function renumberPrompts() {
+  prompts.forEach((p, i) => { p.num = 'P-' + String(i+1).padStart(2,'0'); });
+}
+
+// ─── DRAG & DROP ─────────────────────────────────────────────────────────────
+let dragSrcId = null;
+
+function setupDragEvents(card) {
+  card.addEventListener('dragstart', e => {
+    dragSrcId = card.dataset.id;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  card.addEventListener('dragend', () => card.classList.remove('dragging'));
+  card.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    card.classList.add('drag-over');
+  });
+  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+  card.addEventListener('drop', e => {
+    e.preventDefault();
+    card.classList.remove('drag-over');
+    if (!dragSrcId || dragSrcId === card.dataset.id) return;
+    const srcIdx = prompts.findIndex(p => p.id === dragSrcId);
+    const dstIdx = prompts.findIndex(p => p.id === card.dataset.id);
+    if (srcIdx < 0 || dstIdx < 0) return;
+    const [moved] = prompts.splice(srcIdx, 1);
+    prompts.splice(dstIdx, 0, moved);
+    renumberPrompts();
+    renderPrompts();
+    saveAll();
+  });
+}
+
+// ─── PROMPT TOOLBAR ──────────────────────────────────────────────────────────
+document.getElementById('resetPromptsBtn').addEventListener('click', () => {
+  showModal('Varsayılanlara Sıfırla', '<p>Mevcut tüm promptlar silinecek ve 8 varsayılan prompt yüklenecek. Devam edilsin mi?</p>', () => {
+    prompts = DEFAULT_PROMPTS.map(p => ({...p}));
+    renderPrompts();
+    saveAll();
+  });
+});
+
+document.getElementById('addPromptBtn').addEventListener('click', () => {
+  const id = 'tp_' + Date.now();
+  const num = 'P-' + String(prompts.length + 1).padStart(2, '0');
+  prompts.push({ id, num, title: 'Yeni Prompt', content: '', tags: [] });
+  renderPrompts();
+  saveAll();
+});
+
+// Template dropdown
+const templateBtn = document.getElementById('templateBtn');
+const templateMenu = document.getElementById('templateMenu');
+templateBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  templateMenu.classList.toggle('open');
+});
+document.addEventListener('click', () => templateMenu.classList.remove('open'));
+
+templateMenu.addEventListener('click', e => {
+  const tpl = e.target.dataset.tpl;
+  if (!tpl || !TEMPLATES[tpl]) return;
+  const t = TEMPLATES[tpl];
+  const id = 'tp_' + Date.now();
+  const num = 'P-' + String(prompts.length + 1).padStart(2, '0');
+  prompts.push({ id, num, title: t.title, content: t.content, tags: t.tags });
+  renderPrompts();
+  saveAll();
+  templateMenu.classList.remove('open');
+});
+
+document.getElementById('copyAllBtn').addEventListener('click', function() {
+  const text = prompts.map((p, i) => `=== ${p.num}: ${p.title} ===\n${p.content}`).join('\n\n');
+  copyText(text, this);
+});
+
+document.getElementById('exportJsonBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(prompts, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'testpilot-prompts.json';
+  a.click();
+});
+
+document.getElementById('importJsonBtn').addEventListener('click', () => {
+  document.getElementById('importFileInput').click();
+});
+
+document.getElementById('importFileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data)) throw new Error('Dizi bekleniyor');
+      showModal('JSON İçe Aktar', `<p>${data.length} prompt yüklenecek. Mevcut promptlar silinecek. Devam edilsin mi?</p>`, () => {
+        prompts = data;
+        renumberPrompts();
+        renderPrompts();
+        saveAll();
+      });
+    } catch(err) {
+      showModal('Hata', `<p style="color:var(--danger)">Geçersiz JSON: ${err.message}</p>`, null);
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+let modalCallback = null;
+function showModal(title, bodyHtml, onConfirm) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = bodyHtml;
+  modalCallback = onConfirm;
+  document.getElementById('modalConfirm').style.display = onConfirm ? '' : 'none';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+document.getElementById('modalCancel').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.remove('open');
+});
+document.getElementById('modalConfirm').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.remove('open');
+  if (modalCallback) modalCallback();
+});
+
+// ─── TAB 4: RUN ──────────────────────────────────────────────────────────────
+function renderRunTab() {
+  // System prompt
+  const sp = document.getElementById('systemPrompt');
+  if (!sp.value) sp.value = store.get('systemPrompt', DEFAULT_SYSTEM_PROMPT);
+
+  // Prompt list
+  const runList = document.getElementById('runPromptList');
+  runList.innerHTML = '';
+  prompts.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'run-prompt-row';
+    const checked = runChecked[p.id] !== false;
+    const status = stepStatuses[p.id] || 'wait';
+    const statusEmoji = {ok:'✅', fail:'❌', wait:'⏳'}[status];
+    row.innerHTML = `
+      <input type="checkbox" data-id="${p.id}" ${checked?'checked':''}>
+      <span class="run-prompt-label"><strong>${escHtml(p.num)}</strong> — ${escHtml(p.title)}</span>
+      <button class="step-status-btn step-${status}" data-id="${p.id}">${statusEmoji}</button>`;
+    runList.appendChild(row);
+
+    row.querySelector('input[type="checkbox"]').addEventListener('change', el => {
+      runChecked[p.id] = el.target.checked;
+      saveAll();
+    });
+    row.querySelector('.step-status-btn').addEventListener('click', function() {
+      const cycle = {wait:'ok', ok:'fail', fail:'wait'};
+      stepStatuses[p.id] = cycle[stepStatuses[p.id] || 'wait'];
+      saveAll();
+      renderRunTab();
+    });
+  });
+
+  // Step status sidebar
+  const ssList = document.getElementById('stepStatusList');
+  ssList.innerHTML = '';
+  prompts.forEach(p => {
+    const status = stepStatuses[p.id] || 'wait';
+    const el = document.createElement('div');
+    el.className = 'run-prompt-row';
+    el.style.cursor = 'pointer';
+    el.innerHTML = `<span style="font-size:16px">${{ok:'✅',fail:'❌',wait:'⏳'}[status]}</span> <span style="font-size:13px">${escHtml(p.num)} ${escHtml(p.title)}</span>`;
+    el.addEventListener('click', () => {
+      const cycle = {wait:'ok', ok:'fail', fail:'wait'};
+      stepStatuses[p.id] = cycle[status];
+      saveAll();
+      renderRunTab();
+    });
+    ssList.appendChild(el);
+  });
+}
+
+document.getElementById('systemPrompt').addEventListener('input', function() {
+  store.set('systemPrompt', this.value);
+  triggerSave();
+});
+document.getElementById('manualLog').addEventListener('input', function() {
+  store.set('manualLog', this.value);
+  triggerSave();
+});
+
+function buildRunText(tool) {
+  const sys = document.getElementById('systemPrompt').value;
+  const selected = prompts.filter(p => runChecked[p.id] !== false);
+  const promptText = selected.map(p => `=== ${p.num}: ${p.title} ===\n${p.content}`).join('\n\n');
+  return `[SİSTEM PROMPT - ${tool}]\n${sys}\n\n[TEST PROMPTLARI]\n${promptText}`;
+}
+
+document.getElementById('copyForCline').addEventListener('click', function() {
+  copyText(buildRunText('Cline'), this);
+});
+document.getElementById('copyForKiro').addEventListener('click', function() {
+  copyText(buildRunText('Kiro'), this);
+});
+
+document.getElementById('selectAllRun').addEventListener('click', () => {
+  prompts.forEach(p => { runChecked[p.id] = true; });
+  saveAll(); renderRunTab();
+});
+document.getElementById('deselectAllRun').addEventListener('click', () => {
+  prompts.forEach(p => { runChecked[p.id] = false; });
+  saveAll(); renderRunTab();
+});
+
+// ─── TIMER ───────────────────────────────────────────────────────────────────
+function formatTime(s) {
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  return [h,m,sec].map(x=>String(x).padStart(2,'0')).join(':');
+}
+function updateTimerDisplay() {
+  document.getElementById('timerDisplay').textContent = formatTime(timerSeconds);
+}
+updateTimerDisplay();
+
+document.getElementById('timerStart').addEventListener('click', () => {
+  if (timerRunning) return;
+  timerRunning = true;
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+    saveAll();
+  }, 1000);
+});
+document.getElementById('timerStop').addEventListener('click', () => {
+  timerRunning = false;
+  clearInterval(timerInterval);
+});
+document.getElementById('timerReset').addEventListener('click', () => {
+  timerRunning = false;
+  clearInterval(timerInterval);
+  timerSeconds = 0;
+  updateTimerDisplay();
+  saveAll();
+});
+
+// ─── TAB 5: REPORT ────────────────────────────────────────────────────────────
+function renderReport() {
+  let ok = 0, fail = 0, wait = 0;
+  const tbody = document.getElementById('reportBody');
+  tbody.innerHTML = '';
+
+  prompts.forEach(p => {
+    const status = stepStatuses[p.id] || 'wait';
+    if (status === 'ok') ok++;
+    else if (status === 'fail') fail++;
+    else wait++;
+
+    const note = reportNotes[p.id] || '';
+    const statusEmoji = {ok:'✅ Başarılı', fail:'❌ Başarısız', wait:'⏳ Bekliyor'}[status];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${escHtml(p.num)}</strong></td>
+      <td>${escHtml(p.title)}</td>
+      <td>${statusEmoji}</td>
+      <td><input class="report-note-input" type="text" value="${escHtml(note)}" placeholder="Not ekle..." data-id="${p.id}"></td>`;
+    tbody.appendChild(tr);
+
+    tr.querySelector('.report-note-input').addEventListener('input', function() {
+      reportNotes[p.id] = this.value;
+      saveAll();
+    });
+  });
+
+  document.getElementById('rptTotal').textContent = prompts.length;
+  document.getElementById('rptOk').textContent = ok;
+  document.getElementById('rptFail').textContent = fail;
+  document.getElementById('rptSkip').textContent = wait;
+  document.getElementById('reportDuration').textContent = 'Süre: ' + formatTime(timerSeconds);
+}
+
+document.getElementById('downloadReportBtn').addEventListener('click', () => {
+  const date = new Date().toLocaleDateString('tr-TR');
+  const rows = prompts.map(p => {
+    const s = stepStatuses[p.id] || 'wait';
+    const note = reportNotes[p.id] || '';
+    const sLabel = {ok:'✅ Başarılı', fail:'❌ Başarısız', wait:'⏳ Bekliyor'}[s];
+    return `<tr><td>${escHtml(p.num)}</td><td>${escHtml(p.title)}</td><td>${sLabel}</td><td>${escHtml(note)}</td></tr>`;
+  }).join('');
+
+  const ok = prompts.filter(p => (stepStatuses[p.id]||'wait')==='ok').length;
+  const fail = prompts.filter(p => (stepStatuses[p.id]||'wait')==='fail').length;
+  const wait = prompts.filter(p => (stepStatuses[p.id]||'wait')==='wait').length;
+
+  const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">
+<title>TestPilot Rapor — ${date}</title>
+<style>body{font-family:system-ui;padding:32px;max-width:900px;margin:auto}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border:1px solid #e2e8f0;text-align:left}
+th{background:#f8fafc}h1{color:#6366f1}
+.ok{color:#10b981}.fail{color:#ef4444}.wait{color:#f59e0b}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.box{border:1px solid #e2e8f0;border-radius:8px;padding:16px;text-align:center}
+.num{font-size:28px;font-weight:700}</style></head><body>
+<h1>🎭 TestPilot POC — Test Raporu</h1>
+<p>Tarih: <strong>${date}</strong> &nbsp;|&nbsp; Süre: <strong>${formatTime(timerSeconds)}</strong></p>
+<div class="summary">
+<div class="box"><div class="num">${prompts.length}</div><div>Toplam</div></div>
+<div class="box"><div class="num ok">${ok}</div><div>Başarılı</div></div>
+<div class="box"><div class="num fail">${fail}</div><div>Başarısız</div></div>
+<div class="box"><div class="num wait">${wait}</div><div>Bekleniyor</div></div>
+</div>
+<table><thead><tr><th>Adım</th><th>Başlık</th><th>Durum</th><th>Not</th></tr></thead>
+<tbody>${rows}</tbody></table>
+<p style="margin-top:24px;color:#94a3b8;font-size:12px">TestPilot POC Dashboard tarafından oluşturuldu.</p>
+</body></html>`;
+
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `testpilot-rapor-${date.replace(/\./g,'-')}.html`;
+  a.click();
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderPrompts();
+</script>
+</body>
+</html>
