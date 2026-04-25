@@ -846,6 +846,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'prompts') requestAnimationFrame(autoResizeAll);
   });
 });
 
@@ -959,11 +960,6 @@ function setupPromptEvents() {
         saveAll();
       }
     });
-    // Auto-grow
-    el.addEventListener('input', () => {
-      el.style.height = 'auto';
-      el.style.height = Math.max(120, el.scrollHeight) + 'px';
-    });
   });
 
   container.querySelectorAll('.collapse-btn').forEach(btn => {
@@ -978,6 +974,7 @@ function setupPromptEvents() {
       btn.textContent = collapsed ? '🔽' : '🔼';
       header.classList.toggle('collapsed', !collapsed);
       store.set('collapsed_' + id, !collapsed);
+      if (collapsed) requestAnimationFrame(() => autoResize(body.querySelector('.prompt-textarea')));
     });
   });
 
