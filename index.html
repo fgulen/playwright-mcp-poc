@@ -7,6 +7,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style type="text/tailwindcss">
+  .nav-btn {
+    @apply flex items-center gap-2.5 py-2.5 px-3.5 w-full rounded-lg text-sm font-medium
+           text-left cursor-pointer transition-all duration-150
+           border-0 border-r-2 border-solid border-transparent
+           text-gray-500 bg-transparent active:scale-95 select-none;
+  }
+  .nav-btn:hover {
+    @apply bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-200;
+  }
+  .nav-btn.active {
+    @apply !border-indigo-500 !text-indigo-600 !bg-indigo-50
+           dark:!border-indigo-400 dark:!text-indigo-400 dark:!bg-indigo-950;
+  }
+  .nav-btn .nav-icon { font-size: 18px; line-height: 1; }
+</style>
 <style>
 :root {
   --brand-primary: #6366f1;
@@ -93,28 +110,6 @@ body {
   top: 56px;
   height: calc(100vh - 56px);
 }
-.nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border: none;
-  border-radius: var(--radius);
-  background: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: left;
-  width: 100%;
-  transition: background 0.15s, color 0.15s;
-}
-.nav-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
-.nav-btn.active { background: #eef2ff; color: var(--brand-primary); }
-@media (prefers-color-scheme: dark) {
-  .nav-btn.active { background: #1e1b4b; color: #a5b4fc; }
-}
-.nav-btn .nav-icon { font-size: 18px; line-height: 1; }
 
 /* CONTENT AREA */
 .content-area {
@@ -522,351 +517,300 @@ function triggerSave() {
 const DEFAULT_PROMPTS = [
   {
     id: 'tp_p01', num: 'P-01', title: 'Landing Page Doğrulama',
-    content: `VERILEN
--------
-- Playwright MCP aktif, tarayıcı hazır
-- Yeni temiz oturum
+    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
 
-ADIMLAR
--------
-1. https://www.bahn.de adresine git
-2. Sayfa tam yüklenene kadar bekle
-3. Çerez onay penceresi açılırsa "Nur notwendige Cookies" butonuna tıkla
-   - Pencere yoksa devam et
-4. Ana sayfada şunların görünür olduğunu kontrol et:
-   - Von (Kalkış) alanı
-   - Nach (Varış) alanı
-5. Sayfa başlığını ve dil ayarını raporla
-6. Ekran görüntüsü al: p01_landing.png
+Adım 1: https://www.bahn.de adresini aç.
+Beklenen: Ana sayfa tamamen yüklenir.
 
-DOGRULAMA
----------
-[ ] Von (Kalkış) alanı görünür
-[ ] Nach (Varış) alanı görünür
-[ ] Sayfa dili Almanca ("de") olarak doğrulandı
-[ ] p01_landing.png kaydedildi
+Adım 2: Ekranda çerez onay penceresi çıkarsa "Nur notwendige Cookies" butonuna tıkla.
+Beklenen: Pencere kapanır. (Çıkmazsa bu adımı geç.)
 
-OZET
-----
-bahn.de açıldı, çerez onayı kapatıldı, arama formu görünür durumda.`,
+Adım 3: Sayfada "Von" (Kalkış) ve "Nach" (Varış) arama kutularının göründüğünü kontrol et.
+Beklenen: Her iki alan da görünür ve boş.
+
+Adım 4: Ekran görüntüsü al ve p01_landing.png olarak kaydet.
+Beklenen: Dosya kaydedilir.
+
+---
+KAYDET: Tüm adımlar bittikten sonra proje kök dizinindeki DISCOVERIES.md dosyasını aç (yoksa oluştur) ve aşağıdaki bilgileri ekle:
+
+## P-01 — Landing Page
+- Sayfa yüklenme süresi: [kaç saniye]
+- Çerez banner: [çıktı / çıkmadı] — çıktıysa hangi buton çalıştı?
+- "Von" alanı: [direkt tıklanabildi / overlay vardı]
+- "Nach" alanı: [direkt tıklanabildi / overlay vardı]
+- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
     tags: ['navigation', 'assertion']
   },
   {
     id: 'tp_p02', num: 'P-02', title: 'Arama Formu Doldurma',
-    content: `VERILEN
--------
-- P-01 tamamlandı
-- bahn.de ana sayfası açık, Von ve Nach alanları görünür
+    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
 
-ADIMLAR
--------
-1. Von (Kalkış) alanına tıkla ve "Köln Hbf" yaz:
-   - Açılan öneri listesinden ilk seçeneği tıkla
-   - Alanda "Köln Hbf" yazısının göründüğünü doğrula
+Adım 1: "Von" (Kalkış) alanına tıkla ve "Köln Hbf" yaz.
+Beklenen: Öneri listesi açılır, ilk seçeneği tıkla, alanda "Köln Hbf" yazar.
 
-2. Nach (Varış) alanına tıkla ve "Berlin Hbf" yaz:
-   - Açılan öneri listesinden ilk seçeneği tıkla
+Adım 2: "Nach" (Varış) alanına tıkla ve "Berlin Hbf" yaz.
+Beklenen: Öneri listesi açılır, ilk seçeneği tıkla.
 
-3. Hinfahrt (Gidiş) tarih/saat butonuna tıkla:
-   - Açılan pencerede Gün, Ay, Yıl alanlarını yarının tarihine ayarla
-   - Saat alanını 08:00 olarak ayarla
-   - "Übernehmen" (Kaydet) butonuna tıkla
-   - Pencere kapanana kadar bekle
+Adım 3: "Hinfahrt" (Gidiş) tarih/saat butonuna tıkla. Açılan pencerede gün, ay, yıl alanlarını yarının tarihine, saati 08:00 olarak ayarla. "Übernehmen" butonuna tıkla.
+Beklenen: Pencere kapanır, buton "ab 08:00" gösterir.
 
-4. Ekran görüntüsü al: p02_form_filled.png
+Adım 4: Ekran görüntüsü al ve p02_form_filled.png olarak kaydet.
+Beklenen: Dosya kaydedilir.
 
-DOGRULAMA
----------
-[ ] Von alanında "Köln Hbf" yazıyor
-[ ] Nach alanında "Berlin Hbf" yazıyor
-[ ] Hinfahrt butonu "ab 08:00" gösteriyor
-[ ] Tarih/saat penceresi kapandı
-[ ] p02_form_filled.png kaydedildi
+---
+KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
 
-OZET
-----
-Köln → Berlin formu dolduruldu, yarın 08:00 gidiş seçildi ve onaylandı.`,
+## P-02 — Arama Formu Doldurma
+- Von alanı tıklanabildi mi? [direkt / overlay engelledi]
+- Nach alanı tıklanabildi mi? [direkt / overlay engelledi]
+- Öneri listesi kaç saniyede açıldı? [süre]
+- Tarih/saat alanları nasıl dolduruldu? [standart klavye / özel yöntem gerekti]
+- "Übernehmen" sonrası buton "ab 08:00" gösterdi mi? [evet / hayır]
+- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
     tags: ['form', 'validation']
   },
   {
     id: 'tp_p03', num: 'P-03', title: 'Gelişmiş Filtreler',
-    content: `VERILEN
--------
-- P-02 tamamlandı
-- Kalkış: Köln Hbf, Varış: Berlin Hbf, Gidiş: yarın 08:00
+    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
 
-ADIMLAR
--------
-1. Bilet sınıfı seç:
-   - "1. Klasse" seçeneğine tıkla
-   - Seçeneğin aktif/seçili hale geldiğini kontrol et
+Adım 1: "1. Klasse" butonuna tıkla.
+Beklenen: Buton seçili/aktif hale gelir.
 
-2. Araç tipi filtrele — sadece ICE ve IC/EC kalsın:
-   - Verkehrsmittel (Araç tipi) butonuna tıkla
-   - Açılan pencerede ICE ve IC/EC dışındaki tüm seçenekleri kapat
-   - "Übernehmen" (Uygula) butonuna tıkla
-   - Butonun "Benutzerdefiniert" gösterdiğini doğrula
+Adım 2: "Verkehrsmittel" (Araç tipi) butonuna tıkla. Açılan pencerede ICE ve IC/EC dışındaki tüm seçenekleri kapat. "Übernehmen" butonuna tıkla.
+Beklenen: Buton "Benutzerdefiniert" gösterir.
 
-3. Yolcu indirimi ekle — BahnCard 25:
-   - Yolcu / Kişi butonuna tıkla
-   - Ermäßigung (İndirim) açılır menüsünü aç
-   - "BahnCard 25, 1. Klasse" seçeneğini tıkla
-   - Menü kapanmazsa başlık alanına tıklayarak kapat
-   - "Übernehmen" (Uygula) butonuna tıkla
-   - "BahnCard 25" içeren butonun göründüğünü doğrula
+Adım 3: Yolcu/Kişi butonuna tıkla. "Ermäßigung" (İndirim) menüsünden "BahnCard 25, 1. Klasse" seçeneğini tıkla. Menü kapanmazsa başlık alanına tıkla. "Übernehmen" butonuna tıkla.
+Beklenen: "BahnCard 25" içeren buton görünür.
 
-4. Rückfahrt (Dönüş) ekle — bugünden 4 gün sonra, 18:00:
-   - Rückfahrt (Dönüş) butonuna tıkla
-   - Açılan takvimden hedef günü seç
-   - Saat alanını 18:00 olarak ayarla
-   - Kaydet butonuna tıkla, pencere kapanana kadar bekle
+Adım 4: "Rückfahrt" (Dönüş) butonuna tıkla. Takvimden bugünden 4 gün sonrasını seç, saati 18:00 yap. Kaydet butonuna tıkla.
+Beklenen: Pencere kapanır, buton "ab 18:00" gösterir.
 
-5. Ekran görüntüsü al: p03_filters_applied.png
+Adım 5: Ekran görüntüsü al ve p03_filters_applied.png olarak kaydet.
+Beklenen: Dosya kaydedilir.
 
-DOGRULAMA
----------
-[ ] 1. Klasse seçili ve aktif
-[ ] Verkehrsmittel butonu "Benutzerdefiniert" gösteriyor
-[ ] "BahnCard 25" içeren buton görünür
-[ ] Rückfahrt butonu "ab 18:00" gösteriyor
-[ ] Tarih/saat penceresi kapandı
-[ ] p03_filters_applied.png kaydedildi
+---
+KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
 
-OZET
-----
-1. Klasse, ICE-only, BahnCard 25 ve dönüş (bugün+4, 18:00) yapılandırıldı.`,
+## P-03 — Gelişmiş Filtreler
+- "1. Klasse" butonu direkt tıklanabildi mi? [evet / hayır, alternatif yöntem:]
+- BahnCard dropdown seçimi sırasında "Übernehmen" kapandı mı? [evet / hayır]
+- BahnCard seçimi için ne gerekti? [standart tıklama / özel yöntem]
+- Rückfahrt takviminde beklenmedik bir durum oldu mu? [varsa yaz]
+- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
     tags: ['form', 'validation']
   },
   {
     id: 'tp_p04', num: 'P-04', title: 'Arama Sonuçları Analizi',
-    content: `VERILEN
--------
-- P-03 tamamlandı
-- Filtreler aktif: 1. Klasse, ICE/IC-EC, BahnCard 25, Gidiş-Dönüş
+    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
 
-ADIMLAR
--------
-1. "Suchen" (Ara) butonuna tıkla
-2. Sonuç sayfasının yüklenmesini bekle (en fazla 40 saniye)
-3. Aşağıdakileri raporla:
-   - Toplam bulunan bağlantı sayısı
-   - İlk 3 bağlantının kalkış saati, varış saati ve toplam süresi
-   - Sayfadaki en düşük fiyat
-   - ICE treni var mı? (Evet / Hayır)
-   - "ausgebucht" (tükenmiş) uyarısı var mı?
-   - Aktarmalı sefer sayısı
-4. Ekran görüntüsü al: p04_results.png
+Adım 1: "Suchen" (Ara) butonuna tıkla.
+Beklenen: Sonuç sayfası yüklenir (en fazla 40 saniye bekle).
 
-DOGRULAMA
----------
-[ ] Sonuç sayfası yüklendi
-[ ] En az 1 bağlantı listelendi
-[ ] İlk 3 bağlantının saat ve süre bilgisi raporlandı
-[ ] En düşük fiyat raporlandı
-[ ] p04_results.png kaydedildi
+Adım 2: Aşağıdakileri raporla:
+- Toplam bağlantı sayısı
+- İlk 3 bağlantının kalkış saati, varış saati ve toplam süresi
+- Sayfadaki en düşük fiyat
+- ICE treni var mı? (Evet / Hayır)
+- "ausgebucht" (tükenmiş) uyarısı var mı?
+- Aktarmalı sefer sayısı
+Beklenen: Tüm bilgiler raporlanır.
 
-OZET
-----
-Arama gönderildi, sonuç sayfası yüklendi, bağlantı ve fiyat detayları raporlandı.`,
+Adım 3: Ekran görüntüsü al ve p04_results.png olarak kaydet.
+Beklenen: Dosya kaydedilir.
+
+---
+KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
+
+## P-04 — Arama Sonuçları
+- Sonuç sayfası kaç saniyede yüklendi? [süre]
+- Kaç bağlantı listelendi? [sayı]
+- "ausgebucht" uyarısı çıktı mı? [evet / hayır]
+- En düşük fiyat: [€]
+- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
     tags: ['assertion', 'reporting']
   },
   {
     id: 'tp_p05', num: 'P-05', title: 'Bilet Seçimi & Koltuk',
-    content: `VERILEN
--------
-- P-04 tamamlandı
-- Arama sonuç sayfası açık, bağlantılar görünür
+    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
 
-ADIMLAR
--------
-1. Gidiş seferi seç:
-   - İlk sonuç için "Weiter" (Devam) butonuna tıkla
-   - Dönüş seçimi sayfasının yüklenmesini bekle
+Adım 1: İlk gidiş seferi için "Weiter" (Devam) butonuna tıkla.
+Beklenen: Dönüş seçimi sayfası yüklenir.
 
-2. Dönüş seferi seç:
-   - İlk sonuç için "Weiter" (Devam) butonuna tıkla
-   - Teklif sayfasının yüklenmesini bekle
+Adım 2: İlk dönüş seferi için "Weiter" butonuna tıkla.
+Beklenen: Teklif sayfası yüklenir.
 
-3. Teklif sayfasında:
-   - "Super Sparpreis" yanındaki "Auswählen" (Seç) butonuna tıkla
-   - "Sitzplatzreservierung" (Koltuk rezervasyonu) seçeneğini aktif et
-   - "Sitzplatz auswählen" (Koltuk seç) butonuna tıkla
-   - Koltuk seçim penceresinin yüklendiğini doğrula
+Adım 3: "Super Sparpreis" yanındaki "Auswählen" butonuna tıkla. "Sitzplatzreservierung" (Koltuk rezervasyonu) seçeneğini aktif et. "Sitzplatz auswählen" butonuna tıkla.
+Beklenen: Koltuk seçim penceresi açılır, içinde tren bilgisi görünür.
 
-4. Koltuk seçim penceresini doğrula:
-   - Pencerenin görünür olduğunu kontrol et
-   - Pencere içinde tren bilgisinin göründüğünü doğrula
+Adım 4: Koltuk seçim penceresinde müsait bir koltuk seç.
+Beklenen: Koltuk seçili olarak işaretlenir.
 
-5. GUVENLIK SINIRI — Sadece say, tıklama:
-   - Sayfadaki şu butonların sayısını logla, hiçbirine dokunma:
-     - "Kaufen" (Satın al)
-     - "Bezahlen" (Öde)
-     - "Weiter zur Buchung" (Rezervasyona devam)
-     - "Kostenpflichtig" (Ücretli)
+Adım 5: "Übernehmen" butonuna tıkla.
+Beklenen: Pencere kapanır, seçilen koltuk onaylanır.
 
-6. Ekran görüntüsü al: p05_detail.png
+Adım 6: Ekran görüntüsü al ve p05_detail.png olarak kaydet.
+Beklenen: Dosya kaydedilir.
 
-DOGRULAMA
----------
-[ ] Dönüş seçimi sayfası yüklendi
-[ ] Teklif sayfasına geçildi
-[ ] Koltuk rezervasyonu aktif edildi
-[ ] Koltuk seçim penceresi görünür
-[ ] Pencere içinde ICE tren bilgisi mevcut
-[ ] Satın alma butonlarına tıklanmadı
-[ ] p05_detail.png kaydedildi
+---
+KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
 
-OZET
-----
-Gidiş + dönüş seçildi, Super Sparpreis + koltuk aktif edildi, koltuk penceresi doğrulandı.`,
+## P-05 — Bilet Seçimi & Koltuk
+- Koltuk seçim penceresi kaç saniyede açıldı? [süre]
+- Müsait koltuk bulmak kolay mıydı? [evet / hayır]
+- "Übernehmen" sonrası pencere kapandı mı? [evet / hayır, alternatif yöntem:]
+- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
     tags: ['navigation', 'assertion']
   },
   {
-    id: 'tp_p06', num: 'P-06', title: 'Fiyat & Tarife Analizi',
-    content: `VERILEN
--------
-- P-05 tamamlandı
-- Teklif seçim sayfası açık, Super Sparpreis seçili
+    id: 'tp_p06', num: 'P-06', title: 'Ödeme Sayfasına Geçiş',
+    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
 
-ADIMLAR
--------
-1. Tüm tarife seçeneklerini listele:
-   - Super Sparpreis, Sparpreis, Flexpreis (varsa diğerleri)
-   - Her tarife için: fiyat (€), iptal koşulu, müsaitlik durumu
+Adım 1: "Weiter zur Buchung" (Rezervasyona devam) butonuna tıkla.
+Beklenen: Kişisel bilgiler (Kundendaten) sayfası yüklenir.
 
-2. BahnCard 25 indiriminin uygulandığını doğrula:
-   - Fiyat yanında indirim ibaresi görünüyor mu?
-   - Gösterilen fiyat indirimli mi?
+Adım 2: Kişisel bilgiler formunu aşağıdaki test kullanıcısı verileriyle doldur:
+- Ad (Vorname): Max
+- Soyad (Nachname): Mustermann
+- E-posta (E-Mail): max.mustermann@testmail.de
+- Doğum tarihi (Geburtsdatum): 15.03.1985
+Beklenen: Tüm alanlar doldurulur.
 
-3. Toplam maliyeti hesapla ve raporla:
-   - Gidiş Super Sparpreis   : _______ €
-   - Dönüş Super Sparpreis   : _______ €
-   - Koltuk rezervasyonu     : _______ €
-   - TOPLAM                  : _______ €
-   (Karşılaştırma: ~250,78 € beklenen — 236,98 € H+R + 13,80 € koltuk)
+Adım 3: "Weiter" (Devam) butonuna tıkla.
+Beklenen: Ödeme (Zahlung) sayfası yüklenir.
 
-4. "Sparpreis" tarifesini seç — SADECE SEÇ, "Weiter" butonuna tıklama
-5. Ekran görüntüsü al: p06_pricing.png
+Adım 4: Ödeme sayfasında şunların göründüğünü kontrol et:
+- Ödeme yöntemi seçenekleri (Kreditkarte, PayPal vb.)
+- Toplam tutar özeti
+Beklenen: Ödeme formu yüklenir, toplam tutar görünür.
 
-DOGRULAMA
----------
-[ ] En az 2 tarife seçeneği listelendi
-[ ] BahnCard 25 indiriminin uygulandığı görünür
-[ ] Toplam fiyat hesaplandı ve raporlandı
-[ ] Sparpreis seçili ama devam edilmedi
-[ ] p06_pricing.png kaydedildi
+Adım 5: GÜVENLİK SINIRI — Kart numarası, CVV veya banka hesabı alanlarına dokunma. Hiçbir ödeme butonuna tıklama.
+Beklenen: Ödeme sayfası görüntülendi, hiçbir ödeme bilgisi girilmedi.
 
-OZET
-----
-Tüm tarife seçenekleri analiz edildi, BahnCard indirimi doğrulandı, toplam maliyet raporlandı.`,
+Adım 6: Ekran görüntüsü al ve p06_zahlung.png olarak kaydet.
+Beklenen: Dosya kaydedilir.
+
+---
+KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
+
+## P-06 — Ödeme Sayfasına Geçiş
+- Kundendaten formu standart alanlar mıydı? [evet / hayır, özel bileşen:]
+- Zahlung sayfası yüklendi mi? [evet / hayır]
+- Hangi ödeme yöntemleri göründü? [listele]
+- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
+    tags: ['navigation', 'form']
+  },
+  {
+    id: 'tp_p07', num: 'P-07', title: 'Fiyat & Tarife Analizi',
+    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
+
+Adım 1: Sayfadaki tüm tarife seçeneklerini (Super Sparpreis, Sparpreis, Flexpreis vb.) listele. Her tarife için fiyat (€), iptal koşulu ve müsaitlik durumunu raporla.
+Beklenen: En az 2 tarife seçeneği listelenir.
+
+Adım 2: BahnCard 25 indiriminin uygulandığını kontrol et.
+Beklenen: Fiyat yanında indirim ibaresi görünür.
+
+Adım 3: Toplam maliyeti hesapla ve raporla:
+- Gidiş Super Sparpreis   : _______ €
+- Dönüş Super Sparpreis   : _______ €
+- Koltuk rezervasyonu     : _______ €
+- TOPLAM                  : _______ €
+Beklenen: Toplam fiyat raporlanır.
+
+Adım 4: "Sparpreis" tarifesini seç. "Weiter" butonuna tıklama.
+Beklenen: Sparpreis seçili, sayfadan çıkılmaz.
+
+Adım 5: Ekran görüntüsü al ve p06_pricing.png olarak kaydet.
+Beklenen: Dosya kaydedilir.
+
+---
+KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
+
+## P-07 — Fiyat & Tarife Analizi
+- Kaç tarife seçeneği göründü? [sayı]
+- BahnCard 25 indirimi görünür müydü? [evet / hayır]
+- Toplam fiyat: [€]
+- Tarife seçimi sayfada beklenmedik değişiklik yarattı mı? [varsa yaz]
+- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
     tags: ['assertion', 'reporting']
   },
   {
-    id: 'tp_p07', num: 'P-07', title: 'Güvenlik Sınırı & Özet Rapor',
-    content: `VERILEN
--------
-- P-01..P-06 tüm adımlar tamamlandı
-- Sparpreis seçili, satın alma öncesi son ekran
+    id: 'tp_p08', num: 'P-08', title: 'Güvenlik Sınırı & Özet Rapor',
+    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
 
-ADIMLAR
--------
-1. Güvenlik kontrolü — bu butonlara sadece bak, tıklama:
-   - Sayfada kaç tane olduğunu say ve raporla (tıklama YASAK):
-     - "Weiter zur Buchung" (Rezervasyona devam)
-     - "Kaufen" (Satın al)
-     - "Bezahlen" (Öde)
-     - "Kostenpflichtig" (Ücretli)
+Adım 1: GÜVENLİK KONTROLÜ — Sayfada şu butonları say, hiçbirine tıklama: "Weiter zur Buchung", "Kaufen", "Bezahlen", "Kostenpflichtig".
+Beklenen: Buton sayıları raporlanır, hiçbirine tıklanmaz.
 
-2. Özet rapor oluştur:
+Adım 2: Aşağıdaki özet raporu oluştur ve chat'e yaz:
 
-   SENARYO OZET RAPORU
-   -------------------
-   Tarih    : [bugünün tarihi]
-   Sure     : [başlangıçtan geçen süre]
-   Site     : https://www.bahn.de
-   Rota     : Köln Hbf → Berlin Hbf
-   Tur      : Gidiş-Dönüş, 1. Klasse, ICE, BahnCard 25
-   Tarife   : Sparpreis
+Tarih  : [bugünün tarihi]
+Süre   : [başlangıçtan geçen süre]
+Site   : https://www.bahn.de
+Rota   : Köln Hbf → Berlin Hbf
+Tür    : Gidiş-Dönüş, 1. Klasse, ICE, BahnCard 25
+Tarife : Sparpreis
 
-   ADIM SONUCLARI
-   P-01 Landing Page     : [GECTI / KALDI] — [not]
-   P-02 Form Doldurma    : [GECTI / KALDI] — [not]
-   P-03 Filtreler        : [GECTI / KALDI] — [not]
-   P-04 Arama Sonuclari  : [GECTI / KALDI] — [not]
-   P-05 Bilet Secimi     : [GECTI / KALDI] — [not]
-   P-06 Fiyat Analizi    : [GECTI / KALDI] — [not]
-   P-07 Guvenlik Siniri  : KORUNDU
+P-01 Landing Page    : [GEÇTİ / KALDI] — [not]
+P-02 Form Doldurma   : [GEÇTİ / KALDI] — [not]
+P-03 Filtreler       : [GEÇTİ / KALDI] — [not]
+P-04 Arama Sonuçları : [GEÇTİ / KALDI] — [not]
+P-05 Bilet Seçimi    : [GEÇTİ / KALDI] — [not]
+P-06 Ödeme Sayfası   : [GEÇTİ / KALDI] — [not]
+P-07 Fiyat Analizi   : [GEÇTİ / KALDI] — [not]
+P-08 Güvenlik Sınırı : KORUNDU
 
-   En dusuk fiyat : _______ € (Sparpreis, BahnCard 25)
-   Sorunlar       : [varsa listele — yoksa "Yok"]
+En düşük fiyat : _______ € (Sparpreis, BahnCard 25)
+Sorunlar       : [varsa listele — yoksa "Yok"]
+Beklenen: Rapor oluşturulur.
 
-3. Tüm tarayıcı sekmelerini kapat
-
-DOGRULAMA
----------
-[ ] Satın alma butonlarına tıklanmadı
-[ ] P-01..P-06 sonuçları tabloda dolduruldu
-[ ] Toplam fiyat ve sorunlar raporlandı
-[ ] Tarayıcı kapatıldı
-
-OZET
-----
-Test tamamlandı — 7 adım çalıştırıldı, güvenlik sınırı korundu, özet rapor oluşturuldu.`,
+Adım 3: Tüm tarayıcı sekmelerini kapat.
+Beklenen: Tarayıcı kapanır.`,
     tags: ['reporting']
   },
   {
-    id: 'tp_p08', num: 'P-08', title: 'Framework Kodu Oluştur',
-    content: `VERILEN
--------
-- P-01..P-07 MCP ile doğrulandı, tüm adımlar çalışıyor
-- FRAMEWORK.md dosyası proje kök dizininde mevcut
-- PLAYWRIGHT_MCP_TIPS.md dosyası proje kök dizininde mevcut
+    id: 'tp_p09', num: 'P-09', title: 'Framework Kodu Oluştur',
+    content: `FRAMEWORK.md ve DISCOVERIES.md dosyalarını okuyarak eksiksiz bir Playwright test framework'ü oluştur:
 
-ADIMLAR
--------
-1. Oku: FRAMEWORK.md + PLAYWRIGHT_MCP_TIPS.md
+Adım 1: FRAMEWORK.md ve DISCOVERIES.md dosyalarını oku.
+Beklenen: Her iki dosya okunur ve içerik anlaşılır.
 
-2. Oluştur: playwright-framework/ klasörü
+Adım 2: Aşağıdaki mimari prensiplere göre playwright-framework/ klasörünü oluştur.
 
-3. Üret (FRAMEWORK.md §Output Structure sırasıyla):
-   - .env                → BASE_URL, PURCHASE_GUARD=true, HEADLESS=false
-   - .env.example        → tüm değerler boş
-   - .gitignore
-   - package.json        → @playwright/test + dotenv, TypeScript
-   - playwright.config.ts   → timeout:120000, video:'on'
-   - global-setup.ts        → PURCHASE_GUARD=false ise başlatmayı durdur
-   - global-teardown.ts
-   - pages/BasePage.ts              → screenshot, bekleme, güvenlik kontrol metodları
-   - pages/BahnSearchPage.ts        → P-01, P-02, P-03 adımları
-   - pages/BahnResultsPage.ts       → P-04 adımları
-   - pages/BahnDetailPage.ts        → P-05, P-06 adımları
-   - tests/TP-001/db-booking-flow.spec.ts  → P-01..P-07 her biri ayrı test() bloğu
-   - utils/reporter.ts              → FRAMEWORK.md §REPORT.md üretimi
-   - utils/logger.ts                → adım logger
-   - utils/screenshotter.ts         → hata anında otomatik screenshot
-   - fixtures/test-fixtures.ts
-   - reports/.gitkeep
-   - README.md                      → Quick Start dahil
+Proje kurulumu:
+- TypeScript tabanlı, @playwright/test kullanılır
+- Tüm yapılandırma ortam değişkenlerinden okunur (.env), sabit değer yazılmaz
+- Test çalıştırma sıralı olur (paralel değil), tek worker
+- Headed mod varsayılan, video kaydı her zaman açık
+- Tarayıcı tam ekran başlatılır
 
-4. PLAYWRIGHT_MCP_TIPS.md'den şu pattern'ları koda uygula:
-   - Vue tarih/saat alanları için özel giriş yardımcısı
-   - Toggle bileşenleri için label tıklama yardımcısı
-   - BahnCard seçimi için gerçek fare koordinatı kullanımı
-   - Sayfa geçişlerinde URL + içerik kombinasyonu bekleme
-   - Çakışan buton durumları için sınıf tabanlı seçici
+Güvenlik:
+- PURCHASE_GUARD değişkeni true olmadığında framework başlamadan durur
+- Ödeme/satın alma içeren hiçbir aksiyon çalıştırılmaz
+- Hassas bilgiler (kullanıcı adı, şifre) .env'de tutulur, .env asla commit edilmez
 
-DOGRULAMA
----------
-[ ] playwright-framework/ tüm dosyaları oluşturuldu
-[ ] npm install başarılı
-[ ] PURCHASE_GUARD=true hiçbir dosyada değiştirilmedi
-[ ] P-01..P-07 ayrı test() blokları (birleştirme yok)
-[ ] video:'off' hiçbir yerde yok
-[ ] Yardımcı metodlar utils/ altında ayrı dosyalarda
+Sayfa nesneleri (Page Object Model):
+- Her mantıksal sayfa/akış için ayrı bir sınıf oluşturulur
+- Tüm sınıflar ortak bir temel sınıftan türer
+- Temel sınıf; ekran görüntüsü alma, bekleme yönetimi, hata yakalama ve güvenlik kontrolünü üstlenir
+- Selector'lar sınıf içinde tek bir yerde tanımlanır, test dosyalarına sızmaz
 
-OZET
-----
-MCP ile doğrulanmış senaryo TypeScript Playwright framework'e dönüştürüldü — Page Object, yardımcı metodlar, video kaydı, reporter ve güvenlik sınırı dahil.`,
+Test dosyaları:
+- Her prompt ayrı bir test() bloğu olur, birleştirilmez
+- Test dosyaları DOM'a doğrudan dokunmaz, tüm etkileşim sayfa nesneleri üzerinden geçer
+- Hata durumunda otomatik ekran görüntüsü alınır
+
+Raporlama:
+- Her test çalışması sonunda Markdown formatında özet rapor üretilir
+- Rapor; test adı, durum, süre ve hata mesajlarını içerir
+- Ekran görüntüleri ve video kayıtları raporla aynı klasörde tutulur
+
+Quick Start talimatları içeren bir README oluşturulur.
+
+Adım 3: DISCOVERIES.md'deki gerçek gözlemleri (çalışan yöntemler, beklenmedik davranışlar, öğrenilen süreler) ilgili sayfa nesnelerine yorum satırı olarak ekle.
+Beklenen: MCP ile keşfedilen bilgi koda yansır, selector ve bekleme süreleri gerçeğe dayalı olur.
+
+Adım 4: PURCHASE_GUARD=true değerinin hiçbir dosyada değiştirilmediğini doğrula.
+Beklenen: Güvenlik sınırı korunur.`,
     tags: ['reporting']
   }
 ];
@@ -880,7 +824,7 @@ const TEMPLATES = {
 };
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-const DATA_VERSION = 6;
+const DATA_VERSION = 16;
 let prompts = store.get('prompts', null);
 const storedVersion = store.get('dataVersion', 0);
 if (!prompts || prompts.length === 0 || storedVersion < DATA_VERSION) {
