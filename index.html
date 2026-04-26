@@ -1,507 +1,921 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TestPilot POC — Playwright MCP Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<style type="text/tailwindcss">
-  .nav-btn {
-    @apply flex items-center gap-2.5 py-2.5 px-3.5 w-full rounded-lg text-sm font-medium
-           text-left cursor-pointer transition-all duration-150
-           border-0 border-r-2 border-solid border-transparent
-           text-gray-500 bg-transparent active:scale-95 select-none;
-  }
-  .nav-btn:hover {
-    @apply bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-200;
-  }
-  .nav-btn.active {
-    @apply !border-indigo-500 !text-indigo-600 !bg-indigo-50
-           dark:!border-indigo-400 dark:!text-indigo-400 dark:!bg-indigo-950;
-  }
-  .nav-btn .nav-icon { font-size: 18px; line-height: 1; }
-</style>
-<style>
-:root {
-  --brand-primary: #6366f1;
-  --brand-hover: #4f46e5;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
-  --border: #e2e8f0;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --shadow: 0 1px 3px rgba(0,0,0,0.1);
-  --radius: 8px;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sichere KI-Testinfrastruktur mit Playwright MCP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Manrope:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1326; --surface-lowest: #060e20; --surface-low: #131b2e;
+      --surface: #171f33; --surface-high: #222a3d; --surface-highest: #2d3449;
+      --on-surface: #dae2fd; --on-surface-variant: #c7c4d7;
+      --outline: #908fa0; --outline-variant: #464554;
+      --primary: #c0c1ff; --primary-container: #8083ff;
+      --on-primary: #1000a9; --on-primary-container: #0d0096;
+      --secondary: #ddb7ff; --secondary-container: #6f00be; --on-secondary-container: #d6a9ff;
+      --tertiary: #89ceff; --tertiary-container: #009ada; --on-tertiary-container: #002d43;
+      --error: #ffb4ab; --error-container: #93000a;
+      --success: #10b981; --radius: 12px;
+    }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface-highest); border-radius: 10px; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--on-surface); min-width: 900px; font-size: 14px; line-height: 1.6; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --border: #334155;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --shadow: 0 1px 3px rgba(0,0,0,0.4);
-  }
-}
+    /* HEADER */
+    .header { background: rgba(11,19,38,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 24px rgba(0,0,0,0.35); }
+    .header-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--on-surface); font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.01em; }
+    .header-logo .logo-icon { color: var(--primary); font-size: 22px; }
+    .header-logo .logo-sub { color: var(--outline); font-weight: 400; font-size: 12px; font-family: 'Manrope', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; margin-left: 4px; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .save-indicator { font-size: 11px; font-family: 'Manrope', sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--success); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; gap: 5px; }
+    .save-indicator.visible { opacity: 1; }
+    .lang-toggle { display: flex; gap: 3px; }
+    .lang-btn { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--outline-variant); background: transparent; color: var(--outline); font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; cursor: pointer; transition: all 0.15s; }
+    .lang-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .lang-btn.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+    /* LAYOUT */
+    .app-body { display: flex; min-height: calc(100vh - 60px); }
+    .side-nav { width: 200px; flex-shrink: 0; background: rgba(6,14,32,0.9); border-right: 1px solid rgba(255,255,255,0.06); padding: 16px 10px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 60px; height: calc(100vh - 60px); }
+    .nav-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; width: 100%; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: 'Manrope', sans-serif; letter-spacing: 0.02em; text-align: left; cursor: pointer; transition: all 0.15s; border: none; border-right: 2px solid transparent; color: var(--outline); background: transparent; user-select: none; }
+    .nav-btn:hover { background: rgba(192,193,255,0.07); color: var(--on-surface-variant); }
+    .nav-btn.active { border-right-color: var(--primary); color: var(--primary); background: rgba(192,193,255,0.1); }
+    .nav-btn .nav-icon { font-size: 20px; line-height: 1; }
+    .content-area { flex: 1; min-width: 0; }
+    .tab-content { display: none; padding: 28px; max-width: 1100px; }
+    .tab-content.active { display: block; }
 
-body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  min-width: 900px;
-  font-size: 14px;
-  line-height: 1.5;
-}
+    /* CARDS */
+    .card { background: rgba(23,31,51,0.5); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .card-title { font-size: 14px; font-weight: 700; color: var(--on-surface); margin-bottom: 14px; font-family: 'Space Grotesk', sans-serif; display: flex; align-items: center; gap: 8px; letter-spacing: -0.01em; }
 
-/* HEADER */
-.header {
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.header-logo { font-weight: 700; font-size: 18px; color: var(--brand-primary); font-family: 'Space Grotesk', sans-serif; }
-.header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
-.save-indicator {
-  font-size: 12px;
-  color: var(--success);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.save-indicator.visible { opacity: 1; }
+    /* BUTTONS */
+    .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--outline-variant); background: var(--surface-high); color: var(--on-surface-variant); cursor: pointer; font-size: 12px; font-family: 'Manrope', sans-serif; font-weight: 700; letter-spacing: 0.04em; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn:hover { background: var(--surface-highest); color: var(--on-surface); border-color: var(--outline); }
+    .btn-primary { background: linear-gradient(135deg, var(--primary-container), var(--primary)); color: var(--on-primary); border: none; box-shadow: 0 4px 16px rgba(128,131,255,0.35); }
+    .btn-primary:hover { background: linear-gradient(135deg, #6a6deb, var(--primary-container)); box-shadow: 0 6px 20px rgba(128,131,255,0.5); color: var(--on-primary); }
+    .btn-danger { background: var(--error-container); color: var(--error); border-color: var(--error-container); }
+    .btn-sm { padding: 5px 12px; font-size: 11px; }
+    .btn-icon { padding: 6px 9px; }
 
-/* LAYOUT */
-.app-body {
-  display: flex;
-  min-height: calc(100vh - 56px);
-}
+    /* FORMS */
+    input[type="text"], input[type="url"], input[type="time"], select, textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--outline-variant); border-radius: 10px; background: var(--surface-low); color: var(--on-surface); font-size: 13px; font-family: 'Inter', sans-serif; transition: border-color 0.15s, box-shadow 0.15s; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(192,193,255,0.12); }
+    textarea { resize: vertical; }
+    label { display: block; font-size: 11px; color: var(--outline); margin-bottom: 5px; font-weight: 700; font-family: 'Manrope', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
 
-/* SIDE NAV */
-.side-nav {
-  width: 200px;
-  flex-shrink: 0;
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border);
-  padding: 16px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  position: sticky;
-  top: 56px;
-  height: calc(100vh - 56px);
-}
+    /* CHECKLIST */
+    .checklist { list-style: none; }
+    .checklist li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist input[type="checkbox"] { width: auto; margin-top: 2px; cursor: pointer; accent-color: var(--primary); }
+    .check-label { cursor: pointer; color: var(--on-surface-variant); font-size: 13px; }
+    .check-label.done { text-decoration: line-through; color: var(--outline); }
 
-/* CONTENT AREA */
-.content-area {
-  flex: 1;
-  min-width: 0;
-}
-.tab-content { display: none; padding: 24px; max-width: 1100px; }
-.tab-content.active { display: block; }
+    /* CODE BLOCKS */
+    .code-block { position: relative; background: var(--surface-lowest); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; margin: 10px 0; }
+    .code-block pre { padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: 12px; color: var(--on-surface-variant); white-space: pre-wrap; word-break: break-all; line-height: 1.7; }
+    .copy-btn { position: absolute; top: 8px; right: 8px; padding: 4px 10px; font-size: 10px; font-family: 'Manrope', sans-serif; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: var(--surface-high); border: 1px solid var(--outline-variant); border-radius: 6px; cursor: pointer; color: var(--outline); transition: all 0.15s; }
+    .copy-btn:hover { color: var(--primary); border-color: var(--primary); }
+    .config-area { font-family: ui-monospace, Consolas, monospace; font-size: 12px; min-height: 100px; }
 
-/* CARDS & PANELS */
-.card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow);
-}
-.card-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+    /* PROMPT CARDS */
+    .prompt-card { background: rgba(23,31,51,0.4); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius); margin-bottom: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: border-color 0.15s, box-shadow 0.15s; }
+    .prompt-card:hover { border-color: rgba(192,193,255,0.12); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
+    .prompt-card.dragging { opacity: 0.45; border-color: var(--primary); }
+    .prompt-card.drag-over { border-color: var(--primary); border-style: dashed; }
+    .prompt-card-header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: grab; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(11,19,38,0.4); border-radius: var(--radius) var(--radius) 0 0; }
+    .prompt-card-header.collapsed { border-bottom: none; border-radius: var(--radius); }
+    .drag-handle { color: var(--outline-variant); font-size: 16px; cursor: grab; user-select: none; transition: color 0.15s; }
+    .prompt-card-header:hover .drag-handle { color: var(--outline); }
+    .prompt-num { font-weight: 700; color: var(--primary); font-size: 12px; font-family: 'Manrope', sans-serif; letter-spacing: 0.06em; min-width: 46px; }
+    .prompt-title-input { flex: 1; border: none; background: transparent; font-weight: 600; font-size: 14px; font-family: 'Space Grotesk', sans-serif; color: var(--on-surface); padding: 0; letter-spacing: -0.01em; }
+    .prompt-title-input:focus { outline: none; }
+    .prompt-title-input::placeholder { color: var(--outline); }
+    .token-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-family: 'Manrope', sans-serif; font-weight: 700; letter-spacing: 0.04em; color: var(--outline); background: rgba(34,42,61,0.8); border: 1px solid var(--outline-variant); padding: 3px 9px; border-radius: 9999px; white-space: nowrap; }
+    .prompt-card-body { padding: 16px 18px; }
+    .prompt-textarea { width: 100%; min-height: 60px; font-family: 'Inter', system-ui, sans-serif; font-size: 14px; line-height: 1.75; resize: none; overflow: hidden; border: 1px solid var(--outline-variant); border-radius: 10px; padding: 14px 16px; background: var(--surface-low); color: var(--on-surface); margin-bottom: 12px; transition: border-color 0.15s, box-shadow 0.15s; }
+    .prompt-textarea:focus { outline: none; border-color: rgba(192,193,255,0.25); box-shadow: 0 0 0 3px rgba(192,193,255,0.08); }
 
-/* BUTTONS */
-.btn {
-  padding: 7px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  cursor: pointer;
-  font-size: 13px;
-  transition: background 0.15s, border-color 0.15s;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.btn:hover { background: var(--bg-tertiary); }
-.btn-primary { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
-.btn-primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
-.btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
-.btn-danger:hover { background: #dc2626; border-color: #dc2626; }
-.btn-success { background: var(--success); color: #fff; border-color: var(--success); }
-.btn-success:hover { background: #059669; }
-.btn-sm { padding: 4px 10px; font-size: 12px; }
-.btn-icon { padding: 5px 8px; }
+    /* TAGS */
+    .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .tag { padding: 3px 12px; border-radius: 9999px; font-size: 10px; font-family: 'Manrope', sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--outline-variant); background: var(--surface-high); color: var(--outline); user-select: none; transition: all 0.15s; }
+    .tag:hover { border-color: var(--outline); color: var(--on-surface-variant); }
+    .tag.selected[data-tag="navigation"] { background: rgba(111,0,190,0.25); color: var(--secondary); border-color: var(--secondary-container); }
+    .tag.selected[data-tag="form"] { background: rgba(192,193,255,0.15); color: var(--primary); border-color: var(--primary-container); }
+    .tag.selected[data-tag="validation"] { background: rgba(0,154,218,0.2); color: var(--tertiary); border-color: var(--tertiary-container); }
+    .tag.selected[data-tag="assertion"] { background: rgba(192,193,255,0.15); color: var(--primary); border-color: var(--primary-container); }
+    .tag.selected[data-tag="reporting"] { background: rgba(16,185,129,0.15); color: var(--success); border-color: rgba(16,185,129,0.4); }
 
-/* FORMS */
-input[type="text"], input[type="url"], input[type="time"], select, textarea {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 13px;
-  font-family: inherit;
-  transition: border-color 0.15s;
-}
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--brand-primary);
-}
-textarea { resize: vertical; }
-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; font-family: 'Inter', sans-serif; }
-.form-row { display: grid; gap: 12px; margin-bottom: 12px; }
-.form-row.cols-2 { grid-template-columns: 1fr 1fr; }
-.form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    /* TOOLBAR */
+    .prompt-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; padding: 14px 18px; background: rgba(23,31,51,0.5); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+    .prompt-actions { display: flex; gap: 6px; align-items: center; }
 
-/* CHECKLIST */
-.checklist { list-style: none; }
-.checklist li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-.checklist li:last-child { border-bottom: none; }
-.checklist input[type="checkbox"] { width: auto; margin-top: 2px; cursor: pointer; accent-color: var(--brand-primary); }
-.check-label { cursor: pointer; }
-.check-label.done { text-decoration: line-through; color: var(--text-muted); }
+    /* DROPDOWN */
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-menu { display: none; position: fixed; z-index: 9999; top: 0; left: 0; background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); min-width: 190px; padding: 6px; backdrop-filter: blur(16px); }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item { padding: 9px 14px; cursor: pointer; font-size: 13px; font-family: 'Inter', sans-serif; color: var(--on-surface-variant); border-radius: 7px; transition: background 0.1s, color 0.1s; }
+    .dropdown-item:hover { background: rgba(192,193,255,0.1); color: var(--on-surface); }
 
-/* CODE BLOCKS */
-.code-block {
-  position: relative;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin: 8px 0;
-}
-.code-block pre {
-  padding: 12px;
-  overflow-x: auto;
-  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, 'Liberation Mono', monospace;
-  font-size: 12px;
-  color: var(--text-primary);
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-.copy-btn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  padding: 3px 8px;
-  font-size: 11px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  cursor: pointer;
-  color: var(--text-secondary);
-}
-.copy-btn:hover { color: var(--brand-primary); }
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(6,14,32,0.75); backdrop-filter: blur(6px); z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--surface); border: 1px solid var(--outline-variant); border-radius: var(--radius); padding: 28px; min-width: 420px; max-width: 90vw; box-shadow: 0 16px 60px rgba(0,0,0,0.6); }
+    .modal-title { font-weight: 700; font-size: 16px; font-family: 'Space Grotesk', sans-serif; margin-bottom: 16px; color: var(--on-surface); }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
 
-/* CONFIG TEXTAREA */
-.config-area {
-  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, 'Liberation Mono', monospace;
-  font-size: 12px;
-  min-height: 100px;
-}
-
-/* PROMPT CARDS */
-.prompt-card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 12px;
-  box-shadow: var(--shadow);
-  transition: border-color 0.15s;
-}
-.prompt-card.dragging { opacity: 0.5; border-color: var(--brand-primary); }
-.prompt-card.drag-over { border-color: var(--brand-primary); border-style: dashed; }
-.prompt-card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  cursor: grab;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-secondary);
-  border-radius: var(--radius) var(--radius) 0 0;
-}
-.prompt-card-header.collapsed { border-bottom: none; border-radius: var(--radius); }
-.drag-handle { color: var(--text-muted); font-size: 16px; cursor: grab; user-select: none; }
-.prompt-num { font-weight: 700; color: var(--brand-primary); font-size: 13px; min-width: 38px; }
-.prompt-title-input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--text-primary);
-  padding: 0;
-}
-.prompt-title-input:focus { outline: none; }
-.token-badge {
-  font-size: 11px;
-  color: var(--text-muted);
-  background: var(--bg-tertiary);
-  padding: 2px 6px;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-.prompt-card-body { padding: 12px 16px; }
-.prompt-textarea {
-  width: 100%;
-  min-height: 60px;
-  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, 'Liberation Mono', monospace;
-  font-size: 14px;
-  line-height: 1.65;
-  resize: none;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  margin-bottom: 10px;
-}
-.prompt-textarea:focus { outline: none; border-color: var(--brand-primary); }
-
-/* TAGS */
-.tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-.tag {
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  user-select: none;
-}
-.tag.selected { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
-
-/* PROMPT TOOLBAR */
-.prompt-toolbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.prompt-actions { display: flex; gap: 6px; align-items: center; }
-
-/* DROPDOWN */
-.dropdown { position: relative; display: inline-block; }
-.dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 200;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  min-width: 180px;
-  padding: 4px 0;
-}
-.dropdown-menu.open { display: block; }
-.dropdown-item {
-  padding: 8px 14px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text-primary);
-}
-.dropdown-item:hover { background: var(--bg-tertiary); }
-
-
-
-/* MODAL */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 500;
-  align-items: center;
-  justify-content: center;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--bg-primary);
-  border-radius: var(--radius);
-  padding: 24px;
-  min-width: 400px;
-  max-width: 90vw;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-}
-.modal-title { font-weight: 600; font-size: 16px; margin-bottom: 16px; }
-.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
-
-/* MISC */
-.section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; }
-.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
-.text-muted { color: var(--text-muted); font-size: 12px; }
-.flex { display: flex; gap: 8px; align-items: center; }
-.flex-wrap { flex-wrap: wrap; }
-.mt-8 { margin-top: 8px; }
-.mt-16 { margin-top: 16px; }
-.mb-8 { margin-bottom: 8px; }
-.empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
-</style>
+    /* MISC */
+    .text-muted { color: var(--outline); font-size: 12px; }
+    .divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 18px 0; }
+    .flex { display: flex; gap: 8px; align-items: center; }
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mb-8 { margin-bottom: 8px; }
+    .empty-state { text-align: center; padding: 48px; color: var(--outline); }
+  </style>
 </head>
 <body>
 
 <div class="header">
   <div class="header-logo">
-    🎭 TestPilot POC
-    <span>Playwright MCP Dashboard</span>
+    <span class="material-symbols-outlined logo-icon">terminal</span>
+    TestPilot POC
+    <span class="logo-sub" data-i18n="sub_title">Test Case Dashboard</span>
   </div>
-  <div id="saveIndicator" class="save-indicator">✓ Kaydedildi</div>
+  <div class="header-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" data-lang="de">DE</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+    <div id="saveIndicator" class="save-indicator">
+      <span class="material-symbols-outlined" style="font-size:14px;">check_circle</span>
+      <span data-i18n="saved">Gespeichert</span>
+    </div>
+  </div>
 </div>
 
 <div class="app-body">
+  <nav class="side-nav">
+    <button class="nav-btn" data-tab="prompts">
+      <span class="material-symbols-outlined nav-icon">list_alt</span>
+      <span data-i18n="nav_prompts">Testfälle</span>
+    </button>
+    <button class="nav-btn" data-tab="setup">
+      <span class="material-symbols-outlined nav-icon">build</span>
+      <span data-i18n="nav_setup">Einrichtung</span>
+    </button>
+  </nav>
 
-<nav class="side-nav">
-  <button class="nav-btn" data-tab="prompts">
-    <span class="nav-icon">💬</span> Promptlar
-  </button>
-  <button class="nav-btn" data-tab="setup">
-    <span class="nav-icon">🔧</span> Kurulum
-  </button>
-</nav>
+  <div class="content-area">
 
-<div class="content-area">
-
-<!-- TAB 1: KURULUM -->
-<div id="tab-setup" class="tab-content">
-  <div class="card">
-    <div class="card-title">1. Playwright Extension Kur</div>
-    <p class="text-muted mb-8">VS Code Marketplace'ten Microsoft tarafından yayınlanan resmi eklentiyi yükle:</p>
-    <div class="code-block">
-      <pre>ms-playwright.playwright</pre>
-      <button class="copy-btn" data-copy="ms-playwright.playwright">Kopyala</button>
-    </div>
-    <p class="text-muted mt-8" style="font-size:12px;">VS Code → Extensions → "<strong>Playwright Test for VSCode</strong>" → Install</p>
-  </div>
-
-  <div class="card">
-    <div class="card-title">2. Playwright MCP Kur</div>
-    <p class="text-muted mb-8">Resmi kurulum kılavuzu:</p>
-    <a href="https://playwright.dev/docs/getting-started-mcp" target="_blank" class="btn btn-sm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
-      🔗 playwright.dev/docs/getting-started-mcp
-    </a>
-    <div class="code-block mt-8">
-      <pre>npx @playwright/mcp@latest</pre>
-      <button class="copy-btn" data-copy="npx @playwright/mcp@latest">Kopyala</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">✅ Kurulum Kontrol Listesi</div>
-    <ul class="checklist" id="setupChecklist">
-      <li>
-        <input type="checkbox" id="chk1" data-key="chk1">
-        <label class="check-label" for="chk1">Playwright extension marketplace'ten yüklendi</label>
-      </li>
-      <li>
-        <input type="checkbox" id="chk2" data-key="chk2">
-        <label class="check-label" for="chk2">Playwright MCP kuruldu ve yapılandırıldı</label>
-      </li>
-      <li>
-        <input type="checkbox" id="chk3" data-key="chk3">
-        <label class="check-label" for="chk3">IDE yeniden başlatıldı, MCP bağlantısı doğrulandı</label>
-      </li>
-    </ul>
-  </div>
-</div>
-
-
-<!-- TAB 3: PROMPT YÖNETİMİ -->
-<div id="tab-prompts" class="tab-content active">
-  <div class="prompt-toolbar">
-    <div class="prompt-actions">
-      <button class="btn btn-primary" id="addPromptBtn">+ Prompt Ekle</button>
-      <div class="dropdown" id="templateDropdown">
-        <button class="btn" id="templateBtn">Şablondan Ekle ▾</button>
-        <div class="dropdown-menu" id="templateMenu">
-          <div class="dropdown-item" data-tpl="navigation">Navigation</div>
-          <div class="dropdown-item" data-tpl="form">Form Doldur</div>
-          <div class="dropdown-item" data-tpl="assertion">Assertion</div>
-          <div class="dropdown-item" data-tpl="screenshot">Screenshot & Rapor</div>
-          <div class="dropdown-item" data-tpl="login">Login</div>
+    <!-- SETUP TAB -->
+    <div id="tab-setup" class="tab-content">
+      <div class="card">
+        <div class="card-title" data-i18n="setup_s1_title">1. Playwright Extension installieren</div>
+        <p class="text-muted mb-8" data-i18n="setup_s1_desc">Installiere die offizielle Microsoft-Extension aus dem VS Code Marketplace:</p>
+        <div class="code-block">
+          <pre>ms-playwright.playwright</pre>
+          <button class="copy-btn" data-copy="ms-playwright.playwright" data-i18n="btn_copy">Kopieren</button>
+        </div>
+        <p class="text-muted mt-8" style="font-size:12px;" data-i18n="setup_s1_note">VS Code → Extensions → "Playwright Test for VSCode" → Installieren</p>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="setup_s2_title">2. Playwright MCP installieren</div>
+        <p class="text-muted mb-8" data-i18n="setup_s2_desc">Offizielle Installationsanleitung:</p>
+        <a href="https://playwright.dev/docs/getting-started-mcp" target="_blank" class="btn btn-sm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+          🔗 playwright.dev/docs/getting-started-mcp
+        </a>
+        <div class="code-block mt-8">
+          <pre>npx @playwright/mcp@latest</pre>
+          <button class="copy-btn" data-copy="npx @playwright/mcp@latest" data-i18n="btn_copy">Kopieren</button>
         </div>
       </div>
+      <div class="card">
+        <div class="card-title" data-i18n="setup_checklist_title">✅ Installations-Checkliste</div>
+        <ul class="checklist" id="setupChecklist">
+          <li><input type="checkbox" id="chk1"><label class="check-label" for="chk1" data-i18n="chk1">Playwright Extension installiert</label></li>
+          <li><input type="checkbox" id="chk2"><label class="check-label" for="chk2" data-i18n="chk2">Playwright MCP installiert und konfiguriert</label></li>
+          <li><input type="checkbox" id="chk3"><label class="check-label" for="chk3" data-i18n="chk3">IDE neu gestartet, MCP-Verbindung bestätigt</label></li>
+        </ul>
+      </div>
     </div>
-    <div class="prompt-actions" style="margin-left:auto;">
-      <button class="btn" id="resetPromptsBtn">↺ Varsayılanlara Sıfırla</button>
-      <button class="btn" id="copyAllBtn">📋 Tümünü Kopyala</button>
-      <button class="btn" id="exportJsonBtn">📤 JSON Dışa Aktar</button>
-      <button class="btn" id="importJsonBtn">📥 JSON İçe Aktar</button>
-      <input type="file" id="importFileInput" accept=".json" style="display:none;">
+
+    <!-- PROMPTS TAB -->
+    <div id="tab-prompts" class="tab-content active">
+      <div class="prompt-toolbar">
+        <div class="prompt-actions">
+          <button class="btn btn-primary" id="addPromptBtn">
+            <span class="material-symbols-outlined" style="font-size:16px;">add</span>
+            <span data-i18n="btn_add_tc">Testfall hinzufügen</span>
+          </button>
+          <div class="dropdown" id="templateDropdown">
+            <button class="btn" id="templateBtn">
+              <span class="material-symbols-outlined" style="font-size:16px;">auto_awesome</span>
+              <span data-i18n="btn_template">Vorlage</span>
+            </button>
+          </div>
+        </div>
+        <div class="prompt-actions" style="margin-left:auto;">
+          <button class="btn" id="resetPromptsBtn">
+            <span class="material-symbols-outlined" style="font-size:16px;">restart_alt</span>
+            <span data-i18n="btn_reset">Zurücksetzen</span>
+          </button>
+          <button class="btn" id="copyAllBtn">
+            <span class="material-symbols-outlined" style="font-size:16px;">content_copy</span>
+            <span data-i18n="btn_copy_all">Alle kopieren</span>
+          </button>
+          <button class="btn" id="exportJsonBtn">
+            <span class="material-symbols-outlined" style="font-size:16px;">upload</span>
+            <span data-i18n="btn_export">Exportieren</span>
+          </button>
+          <button class="btn" id="importJsonBtn">
+            <span class="material-symbols-outlined" style="font-size:16px;">download</span>
+            <span data-i18n="btn_import">Importieren</span>
+          </button>
+          <input type="file" id="importFileInput" accept=".json" style="display:none;">
+        </div>
+      </div>
+      <div id="promptList"></div>
     </div>
+
   </div>
-  <div id="promptList"></div>
 </div>
 
+<!-- TEMPLATE MENU PORTAL -->
+<div class="dropdown-menu" id="templateMenu">
+  <div class="dropdown-item" data-tpl="navigation" data-i18n="tpl_nav">Navigation</div>
+  <div class="dropdown-item" data-tpl="form" data-i18n="tpl_form">Formular ausfüllen</div>
+  <div class="dropdown-item" data-tpl="assertion" data-i18n="tpl_assertion">Assertion</div>
+  <div class="dropdown-item" data-tpl="screenshot" data-i18n="tpl_screenshot">Screenshot & Bericht</div>
+  <div class="dropdown-item" data-tpl="login" data-i18n="tpl_login">Login</div>
+</div>
 
-</div><!-- /content-area -->
-</div><!-- /app-body -->
-
-<!-- MODAL (JSON Import) -->
+<!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <div class="modal-title" id="modalTitle">JSON İçe Aktar</div>
+    <div class="modal-title" id="modalTitle"></div>
     <div id="modalBody"></div>
     <div class="modal-actions">
-      <button class="btn" id="modalCancel">İptal</button>
-      <button class="btn btn-primary" id="modalConfirm">Onayla</button>
+      <button class="btn" id="modalCancel" data-i18n="btn_cancel">Abbrechen</button>
+      <button class="btn btn-primary" id="modalConfirm" data-i18n="btn_confirm">Bestätigen</button>
     </div>
   </div>
 </div>
 
 <script>
-// ─── STORAGE ────────────────────────────────────────────────────────────────
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
 const PREFIX = 'testpilot_';
 const store = {
   get: (k, def) => { try { const v = localStorage.getItem(PREFIX+k); return v ? JSON.parse(v) : def; } catch { return def; } },
   set: (k, v) => { try { localStorage.setItem(PREFIX+k, JSON.stringify(v)); } catch {} }
 };
+
+// ─── I18N ─────────────────────────────────────────────────────────────────────
+const I18N = {
+  de: {
+    sub_title: 'Test Case Dashboard', saved: 'Gespeichert',
+    nav_prompts: 'Testfälle', nav_setup: 'Einrichtung',
+    btn_add_tc: 'Testfall hinzufügen', btn_template: 'Vorlage',
+    btn_reset: 'Zurücksetzen', btn_copy_all: 'Alle kopieren',
+    btn_export: 'Exportieren', btn_import: 'Importieren',
+    btn_copy: 'Kopieren', btn_cancel: 'Abbrechen', btn_confirm: 'Bestätigen',
+    setup_s1_title: '1. Playwright Extension installieren',
+    setup_s1_desc: 'Installiere die offizielle Microsoft-Extension aus dem VS Code Marketplace:',
+    setup_s1_note: 'VS Code → Extensions → "Playwright Test for VSCode" → Installieren',
+    setup_s2_title: '2. Playwright MCP installieren',
+    setup_s2_desc: 'Offizielle Installationsanleitung:',
+    setup_checklist_title: '✅ Installations-Checkliste',
+    chk1: 'Playwright Extension aus dem Marketplace installiert',
+    chk2: 'Playwright MCP installiert und konfiguriert',
+    chk3: 'IDE neu gestartet, MCP-Verbindung bestätigt',
+    tpl_nav: 'Navigation', tpl_form: 'Formular ausfüllen',
+    tpl_assertion: 'Assertion', tpl_screenshot: 'Screenshot & Bericht', tpl_login: 'Login',
+    reset_title: 'Auf Standard zurücksetzen',
+    reset_body: '<p>Alle Testfälle werden gelöscht und 9 Standard-Testfälle geladen. Fortfahren?</p>',
+    import_title: 'JSON importieren',
+    import_confirm: (n) => `<p>${n} Testfälle werden geladen. Aktuelle Testfälle werden überschrieben. Fortfahren?</p>`,
+    import_error: (e) => `<p style="color:var(--error)">Ungültiges JSON: ${e}</p>`,
+    copy_done: '✓ Kopiert',
+    placeholder_title: 'Titel...', placeholder_content: 'Testfall-Inhalt...',
+  },
+  en: {
+    sub_title: 'Test Case Dashboard', saved: 'Saved',
+    nav_prompts: 'Test Cases', nav_setup: 'Setup',
+    btn_add_tc: 'Add Test Case', btn_template: 'Template',
+    btn_reset: 'Reset', btn_copy_all: 'Copy All',
+    btn_export: 'Export', btn_import: 'Import',
+    btn_copy: 'Copy', btn_cancel: 'Cancel', btn_confirm: 'Confirm',
+    setup_s1_title: '1. Install Playwright Extension',
+    setup_s1_desc: 'Install the official Microsoft extension from the VS Code Marketplace:',
+    setup_s1_note: 'VS Code → Extensions → "Playwright Test for VSCode" → Install',
+    setup_s2_title: '2. Install Playwright MCP',
+    setup_s2_desc: 'Official installation guide:',
+    setup_checklist_title: '✅ Installation Checklist',
+    chk1: 'Playwright Extension installed from Marketplace',
+    chk2: 'Playwright MCP installed and configured',
+    chk3: 'IDE restarted, MCP connection verified',
+    tpl_nav: 'Navigation', tpl_form: 'Fill Form',
+    tpl_assertion: 'Assertion', tpl_screenshot: 'Screenshot & Report', tpl_login: 'Login',
+    reset_title: 'Reset to Defaults',
+    reset_body: '<p>All test cases will be deleted and 9 default test cases will be loaded. Continue?</p>',
+    import_title: 'Import JSON',
+    import_confirm: (n) => `<p>${n} test cases will be loaded. Current test cases will be replaced. Continue?</p>`,
+    import_error: (e) => `<p style="color:var(--error)">Invalid JSON: ${e}</p>`,
+    copy_done: '✓ Copied',
+    placeholder_title: 'Title...', placeholder_content: 'Test case content...',
+  }
+};
+
+let currentLang = store.get('lang', 'de');
+const t = (key) => I18N[currentLang][key] || key;
+
+function setLang(lang) {
+  currentLang = lang;
+  store.set('lang', lang);
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (I18N[lang][k]) el.textContent = I18N[lang][k];
+  });
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  renderPrompts();
+}
+
+// ─── DEFAULT PROMPTS ──────────────────────────────────────────────────────────
+const DEFAULT_PROMPTS = [
+  {
+    id: 'tp_p01', num: 'TC-01',
+    title: {
+      de: 'Landing Page Validierung',
+      en: 'Landing Page Validation'
+    },
+    content: {
+      de: `Verwende Playwright MCP für folgende Aufgabe:
+
+Schritt 1: Öffne https://www.bahn.de
+Erwartet: Startseite lädt vollständig.
+
+Schritt 2: Falls Cookie-Fenster erscheint, klicke "Nur notwendige Cookies".
+Erwartet: Fenster schließt. (Bei Nichterscheinen überspringen.)
+
+Schritt 3: Prüfe ob "Von" (Abfahrt) und "Nach" (Ankunft) Felder sichtbar sind.
+Erwartet: Beide Felder sichtbar und leer.
+
+Schritt 4: Screenshot als p01_landing.png speichern.
+
+---
+SPEICHERN → DISCOVERIES.md:
+## TC-01 — Landing Page
+- Ladezeit: [Sek.]
+- Cookie-Banner: [erschienen / nicht] — Button: [welcher]
+- "Von"-Feld: [direkt / Overlay]
+- "Nach"-Feld: [direkt / Overlay]
+- Unerwartetes: [falls vorhanden / keines]`,
+      en: `Use Playwright MCP to complete the following task:
+
+Step 1: Open https://www.bahn.de
+Expected: Homepage loads completely.
+
+Step 2: If cookie dialog appears, click "Nur notwendige Cookies".
+Expected: Dialog closes. (Skip if not shown.)
+
+Step 3: Verify "Von" (Departure) and "Nach" (Arrival) fields are visible.
+Expected: Both fields visible and empty.
+
+Step 4: Save screenshot as p01_landing.png.
+
+---
+SAVE → DISCOVERIES.md:
+## TC-01 — Landing Page
+- Load time: [sec]
+- Cookie banner: [shown / not] — Button: [which]
+- "Von" field: [direct / overlay]
+- "Nach" field: [direct / overlay]
+- Unexpected: [describe / none]`
+    },
+    tags: ['navigation', 'assertion']
+  },
+  {
+    id: 'tp_p02', num: 'TC-02',
+    title: { de: 'Suchformular ausfüllen', en: 'Fill Search Form' },
+    content: {
+      de: `Verwende Playwright MCP für folgende Aufgabe:
+
+Schritt 1: "Von"-Feld klicken, "Köln Hbf" eingeben, ersten Vorschlag auswählen.
+Erwartet: Feld zeigt "Köln Hbf".
+
+Schritt 2: "Nach"-Feld klicken, "Berlin Hbf" eingeben, ersten Vorschlag auswählen.
+
+Schritt 3: "Hinfahrt"-Button klicken. Datum auf morgen, Uhrzeit 08:00 setzen. "Übernehmen" klicken.
+Erwartet: Button zeigt "ab 08:00".
+
+Schritt 4: Screenshot als p02_form_filled.png speichern.
+
+---
+SPEICHERN → DISCOVERIES.md:
+## TC-02 — Suchformular
+- "Von"-Feld direkt klickbar? [ja / Overlay]
+- "Nach"-Feld direkt klickbar? [ja / Overlay]
+- Vorschlagsliste: [Sek. bis Öffnung]
+- Datum/Zeit: [Standard / Sondermethode]
+- "ab 08:00" angezeigt? [ja / nein]
+- Unerwartetes: [falls vorhanden / keines]`,
+      en: `Use Playwright MCP to complete the following task:
+
+Step 1: Click "Von" field, type "Köln Hbf", select first suggestion.
+Expected: Field shows "Köln Hbf".
+
+Step 2: Click "Nach" field, type "Berlin Hbf", select first suggestion.
+
+Step 3: Click "Hinfahrt" button. Set date to tomorrow, time to 08:00. Click "Übernehmen".
+Expected: Button shows "ab 08:00".
+
+Step 4: Save screenshot as p02_form_filled.png.
+
+---
+SAVE → DISCOVERIES.md:
+## TC-02 — Search Form
+- "Von" directly clickable? [yes / overlay]
+- "Nach" directly clickable? [yes / overlay]
+- Suggestion list: [sec to open]
+- Date/time: [standard / special method]
+- "ab 08:00" shown? [yes / no]
+- Unexpected: [describe / none]`
+    },
+    tags: ['form', 'validation']
+  },
+  {
+    id: 'tp_p03', num: 'TC-03',
+    title: { de: 'Erweiterte Filter', en: 'Advanced Filters' },
+    content: {
+      de: `Verwende Playwright MCP für folgende Aufgabe:
+
+Schritt 1: "1. Klasse"-Button klicken.
+Erwartet: Button aktiv/ausgewählt.
+
+Schritt 2: "Verkehrsmittel"-Button klicken. Nur ICE und IC/EC aktiviert lassen. "Übernehmen" klicken.
+Erwartet: Button zeigt "Benutzerdefiniert".
+
+Schritt 3: Personen-Button klicken. Unter "Ermäßigung" → "BahnCard 25, 1. Klasse" auswählen. "Übernehmen" klicken.
+Erwartet: Button zeigt "BahnCard 25".
+
+Schritt 4: "Rückfahrt"-Button klicken. Datum auf 4 Tage ab heute, 18:00 Uhr. Speichern.
+Erwartet: Button zeigt "ab 18:00".
+
+Schritt 5: Screenshot als p03_filters_applied.png speichern.
+
+---
+SPEICHERN → DISCOVERIES.md:
+## TC-03 — Filter
+- "1. Klasse" direkt klickbar? [ja / nein]
+- BahnCard-Auswahl: [Standard / Sondermethode]
+- Rückfahrt-Kalender: [Probleme?]
+- Unerwartetes: [falls vorhanden / keines]`,
+      en: `Use Playwright MCP to complete the following task:
+
+Step 1: Click "1. Klasse" button.
+Expected: Button active/selected.
+
+Step 2: Click "Verkehrsmittel". Keep only ICE and IC/EC enabled. Click "Übernehmen".
+Expected: Button shows "Benutzerdefiniert".
+
+Step 3: Click passengers button. Under "Ermäßigung" select "BahnCard 25, 1. Klasse". Click "Übernehmen".
+Expected: Button shows "BahnCard 25".
+
+Step 4: Click "Rückfahrt". Set date to 4 days from today, time 18:00. Save.
+Expected: Button shows "ab 18:00".
+
+Step 5: Save screenshot as p03_filters_applied.png.
+
+---
+SAVE → DISCOVERIES.md:
+## TC-03 — Filters
+- "1. Klasse" directly clickable? [yes / no]
+- BahnCard selection: [standard / special method]
+- Return calendar: [issues?]
+- Unexpected: [describe / none]`
+    },
+    tags: ['form', 'validation']
+  },
+  {
+    id: 'tp_p04', num: 'TC-04',
+    title: { de: 'Suchergebnisse analysieren', en: 'Analyse Search Results' },
+    content: {
+      de: `Verwende Playwright MCP für folgende Aufgabe:
+
+Schritt 1: "Suchen"-Button klicken.
+Erwartet: Ergebnisseite lädt (max. 40 Sek.).
+
+Schritt 2: Folgendes melden:
+- Gesamtanzahl der Verbindungen
+- Erste 3 Verbindungen: Abfahrt, Ankunft, Dauer
+- Günstigster Preis auf der Seite
+- ICE vorhanden? (Ja / Nein)
+- "ausgebucht"-Hinweis vorhanden?
+- Anzahl Verbindungen mit Umstieg
+
+Schritt 3: Screenshot als p04_results.png speichern.
+
+---
+SPEICHERN → DISCOVERIES.md:
+## TC-04 — Suchergebnisse
+- Ladezeit: [Sek.]
+- Anzahl Verbindungen: [Zahl]
+- "ausgebucht": [ja / nein]
+- Günstigster Preis: [€]
+- Unerwartetes: [falls vorhanden / keines]`,
+      en: `Use Playwright MCP to complete the following task:
+
+Step 1: Click "Suchen" (Search).
+Expected: Results page loads (max. 40 sec).
+
+Step 2: Report the following:
+- Total number of connections
+- First 3 connections: departure, arrival, duration
+- Lowest price on page
+- ICE available? (Yes / No)
+- Any "ausgebucht" (sold out) warning?
+- Number of connections with transfers
+
+Step 3: Save screenshot as p04_results.png.
+
+---
+SAVE → DISCOVERIES.md:
+## TC-04 — Search Results
+- Load time: [sec]
+- Number of connections: [count]
+- "ausgebucht" warning: [yes / no]
+- Lowest price: [€]
+- Unexpected: [describe / none]`
+    },
+    tags: ['assertion', 'reporting']
+  },
+  {
+    id: 'tp_p05', num: 'TC-05',
+    title: { de: 'Fahrschein & Sitzplatz', en: 'Ticket & Seat Selection' },
+    content: {
+      de: `Verwende Playwright MCP für folgende Aufgabe:
+
+Schritt 1: Erste Hinfahrt → "Weiter" klicken.
+Erwartet: Rückfahrt-Auswahl lädt.
+
+Schritt 2: Erste Rückfahrt → "Weiter" klicken.
+Erwartet: Angebots-Seite lädt.
+
+Schritt 3: Neben "Super Sparpreis" auf "Auswählen" klicken. "Sitzplatzreservierung" aktivieren. "Sitzplatz auswählen" klicken.
+Erwartet: Sitzplatz-Fenster öffnet sich.
+
+Schritt 4: Verfügbaren Sitzplatz auswählen.
+Erwartet: Sitzplatz markiert.
+
+Schritt 5: "Übernehmen" klicken.
+Erwartet: Fenster schließt, Sitzplatz bestätigt.
+
+Schritt 6: Screenshot als p05_detail.png speichern.
+
+---
+SPEICHERN → DISCOVERIES.md:
+## TC-05 — Fahrschein & Sitzplatz
+- Sitzplatz-Fenster Ladezeit: [Sek.]
+- Verfügbarer Sitzplatz leicht gefunden? [ja / nein]
+- "Übernehmen" → Fenster geschlossen? [ja / nein]
+- Unerwartetes: [falls vorhanden / keines]`,
+      en: `Use Playwright MCP to complete the following task:
+
+Step 1: First outbound journey → click "Weiter".
+Expected: Return journey selection loads.
+
+Step 2: First return journey → click "Weiter".
+Expected: Offer page loads.
+
+Step 3: Click "Auswählen" next to "Super Sparpreis". Enable "Sitzplatzreservierung". Click "Sitzplatz auswählen".
+Expected: Seat selection window opens.
+
+Step 4: Select an available seat.
+Expected: Seat marked as selected.
+
+Step 5: Click "Übernehmen".
+Expected: Window closes, seat confirmed.
+
+Step 6: Save screenshot as p05_detail.png.
+
+---
+SAVE → DISCOVERIES.md:
+## TC-05 — Ticket & Seat
+- Seat window load time: [sec]
+- Available seat easy to find? [yes / no]
+- "Übernehmen" → window closed? [yes / no]
+- Unexpected: [describe / none]`
+    },
+    tags: ['navigation', 'assertion']
+  },
+  {
+    id: 'tp_p06', num: 'TC-06',
+    title: { de: 'Zur Zahlungsseite', en: 'Proceed to Payment' },
+    content: {
+      de: `Verwende Playwright MCP für folgende Aufgabe:
+
+Schritt 1: "Weiter zur Buchung" klicken.
+Erwartet: Kundendaten-Seite lädt.
+
+Schritt 2: Formular mit Testdaten ausfüllen:
+- Vorname: Max
+- Nachname: Mustermann
+- E-Mail: max.mustermann@testmail.de
+- Geburtsdatum: 15.03.1985
+
+Schritt 3: "Weiter" klicken.
+Erwartet: Zahlungsseite lädt.
+
+Schritt 4: Prüfen ob folgendes angezeigt wird:
+- Zahlungsmethoden (Kreditkarte, PayPal usw.)
+- Gesamtbetrag-Übersicht
+
+Schritt 5: SICHERHEITSGRENZE — Keine Kartennummer, CVV oder Bankdaten eingeben. Keinen Kauf-Button klicken.
+
+Schritt 6: Screenshot als p06_zahlung.png speichern.
+
+---
+SPEICHERN → DISCOVERIES.md:
+## TC-06 — Zahlungsseite
+- Kundendaten-Formular: [Standard / Sonderkomponente]
+- Zahlungsseite geladen? [ja / nein]
+- Zahlungsmethoden: [Liste]
+- Unerwartetes: [falls vorhanden / keines]`,
+      en: `Use Playwright MCP to complete the following task:
+
+Step 1: Click "Weiter zur Buchung".
+Expected: Customer details (Kundendaten) page loads.
+
+Step 2: Fill form with test data:
+- First name (Vorname): Max
+- Last name (Nachname): Mustermann
+- Email: max.mustermann@testmail.de
+- Date of birth (Geburtsdatum): 15.03.1985
+
+Step 3: Click "Weiter".
+Expected: Payment (Zahlung) page loads.
+
+Step 4: Verify the following:
+- Payment methods (Kreditkarte, PayPal, etc.)
+- Total amount summary
+
+Step 5: SECURITY BOUNDARY — Do NOT enter card number, CVV or bank details. Do NOT click any payment button.
+
+Step 6: Save screenshot as p06_zahlung.png.
+
+---
+SAVE → DISCOVERIES.md:
+## TC-06 — Payment Page
+- Customer form: [standard / special component]
+- Payment page loaded? [yes / no]
+- Payment methods: [list]
+- Unexpected: [describe / none]`
+    },
+    tags: ['navigation', 'form']
+  },
+  {
+    id: 'tp_p07', num: 'TC-07',
+    title: { de: 'Preis- & Tarifanalyse', en: 'Price & Fare Analysis' },
+    content: {
+      de: `Verwende Playwright MCP für folgende Aufgabe:
+
+Schritt 1: Alle Tarifoptionen auflisten (Super Sparpreis, Sparpreis, Flexpreis usw.). Für jeden Tarif: Preis (€), Stornobedingungen, Verfügbarkeit.
+Erwartet: Mindestens 2 Tarifoptionen.
+
+Schritt 2: BahnCard 25 Rabatt prüfen.
+Erwartet: Rabatt-Hinweis neben Preis sichtbar.
+
+Schritt 3: Gesamtkosten berechnen:
+- Hinfahrt Super Sparpreis : _______ €
+- Rückfahrt Super Sparpreis: _______ €
+- Sitzplatzreservierung    : _______ €
+- GESAMT                   : _______ €
+
+Schritt 4: "Sparpreis" auswählen. "Weiter" NICHT klicken.
+
+Schritt 5: Screenshot als p07_pricing.png speichern.
+
+---
+SPEICHERN → DISCOVERIES.md:
+## TC-07 — Tarife
+- Anzahl Tarifoptionen: [Zahl]
+- BahnCard 25 Rabatt sichtbar? [ja / nein]
+- Gesamtpreis: [€]
+- Unerwartetes: [falls vorhanden / keines]`,
+      en: `Use Playwright MCP to complete the following task:
+
+Step 1: List all fare options (Super Sparpreis, Sparpreis, Flexpreis, etc.). For each: price (€), cancellation terms, availability.
+Expected: At least 2 fare options.
+
+Step 2: Verify BahnCard 25 discount is applied.
+Expected: Discount shown next to price.
+
+Step 3: Calculate total cost:
+- Outbound Super Sparpreis: _______ €
+- Return Super Sparpreis  : _______ €
+- Seat reservation        : _______ €
+- TOTAL                   : _______ €
+
+Step 4: Select "Sparpreis". Do NOT click "Weiter".
+
+Step 5: Save screenshot as p07_pricing.png.
+
+---
+SAVE → DISCOVERIES.md:
+## TC-07 — Fares
+- Number of fare options: [count]
+- BahnCard 25 discount visible? [yes / no]
+- Total price: [€]
+- Unexpected: [describe / none]`
+    },
+    tags: ['assertion', 'reporting']
+  },
+  {
+    id: 'tp_p08', num: 'TC-08',
+    title: { de: 'Sicherheitsgrenze & Bericht', en: 'Security Boundary & Report' },
+    content: {
+      de: `Verwende Playwright MCP für folgende Aufgabe:
+
+Schritt 1: SICHERHEITSPRÜFUNG — Folgende Buttons zählen, KEINEN anklicken: "Weiter zur Buchung", "Kaufen", "Bezahlen", "Kostenpflichtig bestellen".
+Erwartet: Anzahl gemeldet, keiner angeklickt.
+
+Schritt 2: Abschlussbericht erstellen:
+
+Datum  : [heutiges Datum]
+Dauer  : [Gesamtdauer]
+Seite  : https://www.bahn.de
+Route  : Köln Hbf → Berlin Hbf
+Art    : Hin/Rückfahrt, 1. Kl., ICE, BahnCard 25
+Tarif  : Sparpreis
+
+TC-01 Landing Page     : [BESTANDEN / FEHLGESCHLAGEN] — [Hinweis]
+TC-02 Suchformular     : [BESTANDEN / FEHLGESCHLAGEN] — [Hinweis]
+TC-03 Filter           : [BESTANDEN / FEHLGESCHLAGEN] — [Hinweis]
+TC-04 Suchergebnisse   : [BESTANDEN / FEHLGESCHLAGEN] — [Hinweis]
+TC-05 Fahrschein/Sitz  : [BESTANDEN / FEHLGESCHLAGEN] — [Hinweis]
+TC-06 Zahlungsseite    : [BESTANDEN / FEHLGESCHLAGEN] — [Hinweis]
+TC-07 Tarifanalyse     : [BESTANDEN / FEHLGESCHLAGEN] — [Hinweis]
+TC-08 Sicherheitsgrenze: EINGEHALTEN
+
+Günstigster Preis : _______ € (Sparpreis, BahnCard 25)
+Probleme          : [falls vorhanden / keine]
+
+Schritt 3: Alle Browser-Tabs schließen.`,
+      en: `Use Playwright MCP to complete the following task:
+
+Step 1: SECURITY CHECK — Count these buttons, do NOT click any: "Weiter zur Buchung", "Kaufen", "Bezahlen", "Kostenpflichtig bestellen".
+Expected: Count reported, none clicked.
+
+Step 2: Create summary report:
+
+Date     : [today's date]
+Duration : [total elapsed]
+Site     : https://www.bahn.de
+Route    : Köln Hbf → Berlin Hbf
+Type     : Round trip, 1st class, ICE, BahnCard 25
+Fare     : Sparpreis
+
+TC-01 Landing Page    : [PASSED / FAILED] — [note]
+TC-02 Search Form     : [PASSED / FAILED] — [note]
+TC-03 Filters         : [PASSED / FAILED] — [note]
+TC-04 Search Results  : [PASSED / FAILED] — [note]
+TC-05 Ticket & Seat   : [PASSED / FAILED] — [note]
+TC-06 Payment Page    : [PASSED / FAILED] — [note]
+TC-07 Fare Analysis   : [PASSED / FAILED] — [note]
+TC-08 Security Boundary: MAINTAINED
+
+Lowest price : _______ € (Sparpreis, BahnCard 25)
+Issues       : [list / none]
+
+Step 3: Close all browser tabs.`
+    },
+    tags: ['reporting']
+  },
+  {
+    id: 'tp_p09', num: 'TC-09',
+    title: { de: 'Framework-Code generieren', en: 'Generate Framework Code' },
+    content: {
+      de: `FRAMEWORK.md und DISCOVERIES.md lesen und vollständiges Playwright Test-Framework erstellen:
+
+Schritt 1: FRAMEWORK.md und DISCOVERIES.md lesen.
+
+Schritt 2: playwright-framework/ Ordner erstellen:
+
+Projekt-Setup:
+- TypeScript, @playwright/test
+- Konfiguration aus .env, keine fest codierten Werte
+- Sequentielle Ausführung, einzelner Worker
+- Headed-Modus, Video-Aufzeichnung immer aktiv
+
+Sicherheit:
+- PURCHASE_GUARD=true Pflichtbedingung
+- Keine Zahlungsaktionen
+- Sensible Daten nur in .env
+
+Page Object Model:
+- Separate Klasse pro Seite/Ablauf
+- Basisklasse: Screenshots, Warten, Fehlerbehandlung, Sicherheitsprüfung
+- Selektoren nur auf Klassenebene
+
+Tests:
+- Jeder TC = ein test()-Block
+- Automatischer Screenshot bei Fehler
+
+Reporting:
+- Markdown-Bericht nach jedem Lauf
+
+Schritt 3: Beobachtungen aus DISCOVERIES.md als Kommentare einfügen.
+
+Schritt 4: PURCHASE_GUARD=true in keiner Datei ändern.`,
+      en: `Read FRAMEWORK.md and DISCOVERIES.md and create a complete Playwright test framework:
+
+Step 1: Read FRAMEWORK.md and DISCOVERIES.md.
+
+Step 2: Create playwright-framework/ folder:
+
+Project Setup:
+- TypeScript, @playwright/test
+- All config from .env, no hardcoded values
+- Sequential execution, single worker
+- Headed mode, video recording always on
+
+Security:
+- PURCHASE_GUARD=true required
+- No payment actions
+- Sensitive data in .env only
+
+Page Object Model:
+- Separate class per page/flow
+- Base class: screenshots, waits, error handling, security check
+- Selectors at class level only
+
+Tests:
+- Each TC = one test() block
+- Auto screenshot on failure
+
+Reporting:
+- Markdown report after each run
+
+Step 3: Add DISCOVERIES.md observations as comments.
+
+Step 4: Do not change PURCHASE_GUARD=true in any file.`
+    },
+    tags: ['reporting']
+  }
+];
+
+const TEMPLATES = {
+  navigation: {
+    title: { de: 'Navigation Vorlage', en: 'Navigation Template' },
+    content: { de: `[ZIEL_URL] öffnen und folgendes prüfen:\n1. Seite vollständig geladen\n2. Hauptinhalt sichtbar\n3. Seitentitel: [ERWARTETER_TITEL]\nScreenshot: [DATEINAME].png`, en: `Open [TARGET_URL] and verify:\n1. Page fully loaded\n2. Main content visible\n3. Page title: [EXPECTED_TITLE]\nScreenshot: [FILENAME].png` },
+    tags: ['navigation']
+  },
+  form: {
+    title: { de: 'Formular ausfüllen Vorlage', en: 'Fill Form Template' },
+    content: { de: `Formular ausfüllen:\n- Feld 1 ([SELECTOR]): [WERT]\n- Feld 2 ([SELECTOR]): [WERT]\nFormular absenden und Ergebnis melden.`, en: `Fill the form:\n- Field 1 ([SELECTOR]): [VALUE]\n- Field 2 ([SELECTOR]): [VALUE]\nSubmit form and report result.` },
+    tags: ['form']
+  },
+  assertion: {
+    title: { de: 'Assertion Vorlage', en: 'Assertion Template' },
+    content: { de: `Folgendes prüfen:\n- [ ] [ELEMENT] sichtbar\n- [ ] [TEXT] auf Seite vorhanden\n- [ ] URL enthält: [URL_TEIL]\nBei Fehler Screenshot aufnehmen.`, en: `Verify the following:\n- [ ] [ELEMENT] visible\n- [ ] [TEXT] present on page\n- [ ] URL contains: [URL_PART]\nTake screenshot on failure.` },
+    tags: ['assertion']
+  },
+  screenshot: {
+    title: { de: 'Screenshot & Bericht Vorlage', en: 'Screenshot & Report Template' },
+    content: { de: `Screenshot der aktuellen Seite: [DATEINAME].png\nMelden:\n- Seitentitel\n- Aktuelle URL\n- Fehlermeldungen vorhanden?\n- [EIGENE_PRÜFUNG]`, en: `Screenshot of current page: [FILENAME].png\nReport:\n- Page title\n- Current URL\n- Any error messages?\n- [CUSTOM_CHECK]` },
+    tags: ['reporting']
+  },
+  login: {
+    title: { de: 'Login Vorlage', en: 'Login Template' },
+    content: { de: `[URL] öffnen und anmelden:\nHINWEIS: Nur Test-Benutzer verwenden.\n- Benutzername: [TEST_USER]\n- Passwort: [TEST_PASS]\nNach Anmeldung: [ERWARTETE_SEITE] prüfen.`, en: `Open [URL] and log in:\nNOTE: Use test user only.\n- Username: [TEST_USER]\n- Password: [TEST_PASS]\nAfter login: verify [EXPECTED_PAGE].` },
+    tags: ['form']
+  }
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const DATA_VERSION = 18;
+let prompts = store.get('prompts', null);
+const storedVersion = store.get('dataVersion', 0);
+if (!prompts || prompts.length === 0 || storedVersion < DATA_VERSION) {
+  prompts = DEFAULT_PROMPTS.map(p => ({...p}));
+  store.set('prompts', prompts);
+  store.set('dataVersion', DATA_VERSION);
+}
+
+function saveAll() {
+  store.set('prompts', prompts);
+  store.set('dataVersion', DATA_VERSION);
+  triggerSave();
+}
 
 let saveTimer;
 function triggerSave() {
@@ -513,333 +927,6 @@ function triggerSave() {
   }, 500);
 }
 
-// ─── DEFAULT PROMPTS ─────────────────────────────────────────────────────────
-const DEFAULT_PROMPTS = [
-  {
-    id: 'tp_p01', num: 'P-01', title: 'Landing Page Doğrulama',
-    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
-
-Adım 1: https://www.bahn.de adresini aç.
-Beklenen: Ana sayfa tamamen yüklenir.
-
-Adım 2: Ekranda çerez onay penceresi çıkarsa "Nur notwendige Cookies" butonuna tıkla.
-Beklenen: Pencere kapanır. (Çıkmazsa bu adımı geç.)
-
-Adım 3: Sayfada "Von" (Kalkış) ve "Nach" (Varış) arama kutularının göründüğünü kontrol et.
-Beklenen: Her iki alan da görünür ve boş.
-
-Adım 4: Ekran görüntüsü al ve p01_landing.png olarak kaydet.
-Beklenen: Dosya kaydedilir.
-
----
-KAYDET: Tüm adımlar bittikten sonra proje kök dizinindeki DISCOVERIES.md dosyasını aç (yoksa oluştur) ve aşağıdaki bilgileri ekle:
-
-## P-01 — Landing Page
-- Sayfa yüklenme süresi: [kaç saniye]
-- Çerez banner: [çıktı / çıkmadı] — çıktıysa hangi buton çalıştı?
-- "Von" alanı: [direkt tıklanabildi / overlay vardı]
-- "Nach" alanı: [direkt tıklanabildi / overlay vardı]
-- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
-    tags: ['navigation', 'assertion']
-  },
-  {
-    id: 'tp_p02', num: 'P-02', title: 'Arama Formu Doldurma',
-    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
-
-Adım 1: "Von" (Kalkış) alanına tıkla ve "Köln Hbf" yaz.
-Beklenen: Öneri listesi açılır, ilk seçeneği tıkla, alanda "Köln Hbf" yazar.
-
-Adım 2: "Nach" (Varış) alanına tıkla ve "Berlin Hbf" yaz.
-Beklenen: Öneri listesi açılır, ilk seçeneği tıkla.
-
-Adım 3: "Hinfahrt" (Gidiş) tarih/saat butonuna tıkla. Açılan pencerede gün, ay, yıl alanlarını yarının tarihine, saati 08:00 olarak ayarla. "Übernehmen" butonuna tıkla.
-Beklenen: Pencere kapanır, buton "ab 08:00" gösterir.
-
-Adım 4: Ekran görüntüsü al ve p02_form_filled.png olarak kaydet.
-Beklenen: Dosya kaydedilir.
-
----
-KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
-
-## P-02 — Arama Formu Doldurma
-- Von alanı tıklanabildi mi? [direkt / overlay engelledi]
-- Nach alanı tıklanabildi mi? [direkt / overlay engelledi]
-- Öneri listesi kaç saniyede açıldı? [süre]
-- Tarih/saat alanları nasıl dolduruldu? [standart klavye / özel yöntem gerekti]
-- "Übernehmen" sonrası buton "ab 08:00" gösterdi mi? [evet / hayır]
-- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
-    tags: ['form', 'validation']
-  },
-  {
-    id: 'tp_p03', num: 'P-03', title: 'Gelişmiş Filtreler',
-    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
-
-Adım 1: "1. Klasse" butonuna tıkla.
-Beklenen: Buton seçili/aktif hale gelir.
-
-Adım 2: "Verkehrsmittel" (Araç tipi) butonuna tıkla. Açılan pencerede ICE ve IC/EC dışındaki tüm seçenekleri kapat. "Übernehmen" butonuna tıkla.
-Beklenen: Buton "Benutzerdefiniert" gösterir.
-
-Adım 3: Yolcu/Kişi butonuna tıkla. "Ermäßigung" (İndirim) menüsünden "BahnCard 25, 1. Klasse" seçeneğini tıkla. Menü kapanmazsa başlık alanına tıkla. "Übernehmen" butonuna tıkla.
-Beklenen: "BahnCard 25" içeren buton görünür.
-
-Adım 4: "Rückfahrt" (Dönüş) butonuna tıkla. Takvimden bugünden 4 gün sonrasını seç, saati 18:00 yap. Kaydet butonuna tıkla.
-Beklenen: Pencere kapanır, buton "ab 18:00" gösterir.
-
-Adım 5: Ekran görüntüsü al ve p03_filters_applied.png olarak kaydet.
-Beklenen: Dosya kaydedilir.
-
----
-KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
-
-## P-03 — Gelişmiş Filtreler
-- "1. Klasse" butonu direkt tıklanabildi mi? [evet / hayır, alternatif yöntem:]
-- BahnCard dropdown seçimi sırasında "Übernehmen" kapandı mı? [evet / hayır]
-- BahnCard seçimi için ne gerekti? [standart tıklama / özel yöntem]
-- Rückfahrt takviminde beklenmedik bir durum oldu mu? [varsa yaz]
-- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
-    tags: ['form', 'validation']
-  },
-  {
-    id: 'tp_p04', num: 'P-04', title: 'Arama Sonuçları Analizi',
-    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
-
-Adım 1: "Suchen" (Ara) butonuna tıkla.
-Beklenen: Sonuç sayfası yüklenir (en fazla 40 saniye bekle).
-
-Adım 2: Aşağıdakileri raporla:
-- Toplam bağlantı sayısı
-- İlk 3 bağlantının kalkış saati, varış saati ve toplam süresi
-- Sayfadaki en düşük fiyat
-- ICE treni var mı? (Evet / Hayır)
-- "ausgebucht" (tükenmiş) uyarısı var mı?
-- Aktarmalı sefer sayısı
-Beklenen: Tüm bilgiler raporlanır.
-
-Adım 3: Ekran görüntüsü al ve p04_results.png olarak kaydet.
-Beklenen: Dosya kaydedilir.
-
----
-KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
-
-## P-04 — Arama Sonuçları
-- Sonuç sayfası kaç saniyede yüklendi? [süre]
-- Kaç bağlantı listelendi? [sayı]
-- "ausgebucht" uyarısı çıktı mı? [evet / hayır]
-- En düşük fiyat: [€]
-- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
-    tags: ['assertion', 'reporting']
-  },
-  {
-    id: 'tp_p05', num: 'P-05', title: 'Bilet Seçimi & Koltuk',
-    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
-
-Adım 1: İlk gidiş seferi için "Weiter" (Devam) butonuna tıkla.
-Beklenen: Dönüş seçimi sayfası yüklenir.
-
-Adım 2: İlk dönüş seferi için "Weiter" butonuna tıkla.
-Beklenen: Teklif sayfası yüklenir.
-
-Adım 3: "Super Sparpreis" yanındaki "Auswählen" butonuna tıkla. "Sitzplatzreservierung" (Koltuk rezervasyonu) seçeneğini aktif et. "Sitzplatz auswählen" butonuna tıkla.
-Beklenen: Koltuk seçim penceresi açılır, içinde tren bilgisi görünür.
-
-Adım 4: Koltuk seçim penceresinde müsait bir koltuk seç.
-Beklenen: Koltuk seçili olarak işaretlenir.
-
-Adım 5: "Übernehmen" butonuna tıkla.
-Beklenen: Pencere kapanır, seçilen koltuk onaylanır.
-
-Adım 6: Ekran görüntüsü al ve p05_detail.png olarak kaydet.
-Beklenen: Dosya kaydedilir.
-
----
-KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
-
-## P-05 — Bilet Seçimi & Koltuk
-- Koltuk seçim penceresi kaç saniyede açıldı? [süre]
-- Müsait koltuk bulmak kolay mıydı? [evet / hayır]
-- "Übernehmen" sonrası pencere kapandı mı? [evet / hayır, alternatif yöntem:]
-- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
-    tags: ['navigation', 'assertion']
-  },
-  {
-    id: 'tp_p06', num: 'P-06', title: 'Ödeme Sayfasına Geçiş',
-    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
-
-Adım 1: "Weiter zur Buchung" (Rezervasyona devam) butonuna tıkla.
-Beklenen: Kişisel bilgiler (Kundendaten) sayfası yüklenir.
-
-Adım 2: Kişisel bilgiler formunu aşağıdaki test kullanıcısı verileriyle doldur:
-- Ad (Vorname): Max
-- Soyad (Nachname): Mustermann
-- E-posta (E-Mail): max.mustermann@testmail.de
-- Doğum tarihi (Geburtsdatum): 15.03.1985
-Beklenen: Tüm alanlar doldurulur.
-
-Adım 3: "Weiter" (Devam) butonuna tıkla.
-Beklenen: Ödeme (Zahlung) sayfası yüklenir.
-
-Adım 4: Ödeme sayfasında şunların göründüğünü kontrol et:
-- Ödeme yöntemi seçenekleri (Kreditkarte, PayPal vb.)
-- Toplam tutar özeti
-Beklenen: Ödeme formu yüklenir, toplam tutar görünür.
-
-Adım 5: GÜVENLİK SINIRI — Kart numarası, CVV veya banka hesabı alanlarına dokunma. Hiçbir ödeme butonuna tıklama.
-Beklenen: Ödeme sayfası görüntülendi, hiçbir ödeme bilgisi girilmedi.
-
-Adım 6: Ekran görüntüsü al ve p06_zahlung.png olarak kaydet.
-Beklenen: Dosya kaydedilir.
-
----
-KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
-
-## P-06 — Ödeme Sayfasına Geçiş
-- Kundendaten formu standart alanlar mıydı? [evet / hayır, özel bileşen:]
-- Zahlung sayfası yüklendi mi? [evet / hayır]
-- Hangi ödeme yöntemleri göründü? [listele]
-- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
-    tags: ['navigation', 'form']
-  },
-  {
-    id: 'tp_p07', num: 'P-07', title: 'Fiyat & Tarife Analizi',
-    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
-
-Adım 1: Sayfadaki tüm tarife seçeneklerini (Super Sparpreis, Sparpreis, Flexpreis vb.) listele. Her tarife için fiyat (€), iptal koşulu ve müsaitlik durumunu raporla.
-Beklenen: En az 2 tarife seçeneği listelenir.
-
-Adım 2: BahnCard 25 indiriminin uygulandığını kontrol et.
-Beklenen: Fiyat yanında indirim ibaresi görünür.
-
-Adım 3: Toplam maliyeti hesapla ve raporla:
-- Gidiş Super Sparpreis   : _______ €
-- Dönüş Super Sparpreis   : _______ €
-- Koltuk rezervasyonu     : _______ €
-- TOPLAM                  : _______ €
-Beklenen: Toplam fiyat raporlanır.
-
-Adım 4: "Sparpreis" tarifesini seç. "Weiter" butonuna tıklama.
-Beklenen: Sparpreis seçili, sayfadan çıkılmaz.
-
-Adım 5: Ekran görüntüsü al ve p06_pricing.png olarak kaydet.
-Beklenen: Dosya kaydedilir.
-
----
-KAYDET: Tüm adımlar bittikten sonra DISCOVERIES.md dosyasına ekle:
-
-## P-07 — Fiyat & Tarife Analizi
-- Kaç tarife seçeneği göründü? [sayı]
-- BahnCard 25 indirimi görünür müydü? [evet / hayır]
-- Toplam fiyat: [€]
-- Tarife seçimi sayfada beklenmedik değişiklik yarattı mı? [varsa yaz]
-- Beklenmedik durum: [varsa yaz, yoksa "yok"]`,
-    tags: ['assertion', 'reporting']
-  },
-  {
-    id: 'tp_p08', num: 'P-08', title: 'Güvenlik Sınırı & Özet Rapor',
-    content: `Playwright MCP kullanarak şu görevi gerçekleştir:
-
-Adım 1: GÜVENLİK KONTROLÜ — Sayfada şu butonları say, hiçbirine tıklama: "Weiter zur Buchung", "Kaufen", "Bezahlen", "Kostenpflichtig".
-Beklenen: Buton sayıları raporlanır, hiçbirine tıklanmaz.
-
-Adım 2: Aşağıdaki özet raporu oluştur ve chat'e yaz:
-
-Tarih  : [bugünün tarihi]
-Süre   : [başlangıçtan geçen süre]
-Site   : https://www.bahn.de
-Rota   : Köln Hbf → Berlin Hbf
-Tür    : Gidiş-Dönüş, 1. Klasse, ICE, BahnCard 25
-Tarife : Sparpreis
-
-P-01 Landing Page    : [GEÇTİ / KALDI] — [not]
-P-02 Form Doldurma   : [GEÇTİ / KALDI] — [not]
-P-03 Filtreler       : [GEÇTİ / KALDI] — [not]
-P-04 Arama Sonuçları : [GEÇTİ / KALDI] — [not]
-P-05 Bilet Seçimi    : [GEÇTİ / KALDI] — [not]
-P-06 Ödeme Sayfası   : [GEÇTİ / KALDI] — [not]
-P-07 Fiyat Analizi   : [GEÇTİ / KALDI] — [not]
-P-08 Güvenlik Sınırı : KORUNDU
-
-En düşük fiyat : _______ € (Sparpreis, BahnCard 25)
-Sorunlar       : [varsa listele — yoksa "Yok"]
-Beklenen: Rapor oluşturulur.
-
-Adım 3: Tüm tarayıcı sekmelerini kapat.
-Beklenen: Tarayıcı kapanır.`,
-    tags: ['reporting']
-  },
-  {
-    id: 'tp_p09', num: 'P-09', title: 'Framework Kodu Oluştur',
-    content: `FRAMEWORK.md ve DISCOVERIES.md dosyalarını okuyarak eksiksiz bir Playwright test framework'ü oluştur:
-
-Adım 1: FRAMEWORK.md ve DISCOVERIES.md dosyalarını oku.
-Beklenen: Her iki dosya okunur ve içerik anlaşılır.
-
-Adım 2: Aşağıdaki mimari prensiplere göre playwright-framework/ klasörünü oluştur.
-
-Proje kurulumu:
-- TypeScript tabanlı, @playwright/test kullanılır
-- Tüm yapılandırma ortam değişkenlerinden okunur (.env), sabit değer yazılmaz
-- Test çalıştırma sıralı olur (paralel değil), tek worker
-- Headed mod varsayılan, video kaydı her zaman açık
-- Tarayıcı tam ekran başlatılır
-
-Güvenlik:
-- PURCHASE_GUARD değişkeni true olmadığında framework başlamadan durur
-- Ödeme/satın alma içeren hiçbir aksiyon çalıştırılmaz
-- Hassas bilgiler (kullanıcı adı, şifre) .env'de tutulur, .env asla commit edilmez
-
-Sayfa nesneleri (Page Object Model):
-- Her mantıksal sayfa/akış için ayrı bir sınıf oluşturulur
-- Tüm sınıflar ortak bir temel sınıftan türer
-- Temel sınıf; ekran görüntüsü alma, bekleme yönetimi, hata yakalama ve güvenlik kontrolünü üstlenir
-- Selector'lar sınıf içinde tek bir yerde tanımlanır, test dosyalarına sızmaz
-
-Test dosyaları:
-- Her prompt ayrı bir test() bloğu olur, birleştirilmez
-- Test dosyaları DOM'a doğrudan dokunmaz, tüm etkileşim sayfa nesneleri üzerinden geçer
-- Hata durumunda otomatik ekran görüntüsü alınır
-
-Raporlama:
-- Her test çalışması sonunda Markdown formatında özet rapor üretilir
-- Rapor; test adı, durum, süre ve hata mesajlarını içerir
-- Ekran görüntüleri ve video kayıtları raporla aynı klasörde tutulur
-
-Quick Start talimatları içeren bir README oluşturulur.
-
-Adım 3: DISCOVERIES.md'deki gerçek gözlemleri (çalışan yöntemler, beklenmedik davranışlar, öğrenilen süreler) ilgili sayfa nesnelerine yorum satırı olarak ekle.
-Beklenen: MCP ile keşfedilen bilgi koda yansır, selector ve bekleme süreleri gerçeğe dayalı olur.
-
-Adım 4: PURCHASE_GUARD=true değerinin hiçbir dosyada değiştirilmediğini doğrula.
-Beklenen: Güvenlik sınırı korunur.`,
-    tags: ['reporting']
-  }
-];
-
-const TEMPLATES = {
-  navigation: { title: 'Navigation Şablonu', content: `[HEDEF_URL] adresine git ve şunları doğrula:\n1. Sayfa tam yüklendi (network idle)\n2. Ana içerik görünür\n3. Sayfa başlığı: [BEKLENEN_BAŞLIK]\nScreenshot al: [DOSYA_ADI].png`, tags: ['navigation'] },
-  form: { title: 'Form Doldur Şablonu', content: `Sayfadaki formu şu şekilde doldur:\n- Alan 1 ([SELECTOR]): [DEĞER]\n- Alan 2 ([SELECTOR]): [DEĞER]\n- Dropdown ([SELECTOR]): [SEÇİLECEK_DEĞER]\nHer alan sonrası doğrulama yap.\nFormu gönder ve sonucu raporla.`, tags: ['form'] },
-  assertion: { title: 'Assertion Şablonu', content: `Şu koşulları doğrula:\n- [ ] [ELEMENT] görünür durumda\n- [ ] [TEXT] sayfada mevcut\n- [ ] URL şunu içeriyor: [URL_PARÇASI]\n- [ ] [ELEMENT] tıklanabilir durumda\nBaşarısız koşul varsa screenshot al.`, tags: ['assertion'] },
-  screenshot: { title: 'Screenshot & Rapor Şablonu', content: `Mevcut sayfanın screenshot'ını al: [DOSYA_ADI].png\nŞu bilgileri raporla:\n- Sayfa başlığı\n- Mevcut URL\n- Görünür hata mesajı var mı?\n- [ÖZEL_KONTROL]`, tags: ['reporting'] },
-  login: { title: 'Login Şablonu', content: `[URL] adresine git ve giriş yap:\nUYARI: Test kullanıcısı kullan, gerçek kimlik bilgisi girme.\n- Kullanıcı adı: [TEST_USER]\n- Şifre: [TEST_PASS]\nBaşarılı giriş sonrası: [BEKLENEN_SAYFA] sayfasına yönlendirildiğini doğrula.`, tags: ['form'] }
-};
-
-// ─── STATE ────────────────────────────────────────────────────────────────────
-const DATA_VERSION = 16;
-let prompts = store.get('prompts', null);
-const storedVersion = store.get('dataVersion', 0);
-if (!prompts || prompts.length === 0 || storedVersion < DATA_VERSION) {
-  prompts = DEFAULT_PROMPTS.map(p => ({...p}));
-  store.set('prompts', prompts);
-  store.set('dataVersion', DATA_VERSION);
-}
-
-// ─── SAVE ─────────────────────────────────────────────────────────────────────
-function saveAll() {
-  store.set('prompts', prompts);
-  store.set('dataVersion', DATA_VERSION);
-  triggerSave();
-}
-
 // ─── TABS ─────────────────────────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -848,45 +935,29 @@ function switchTab(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
   if (tab === 'prompts') requestAnimationFrame(autoResizeAll);
 }
-
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
+document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
 switchTab('prompts');
 
-// ─── AUTO-RESIZE TEXTAREA ─────────────────────────────────────────────────────
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-}
-function autoResizeAll() {
-  document.querySelectorAll('.prompt-textarea').forEach(autoResize);
-}
+// ─── RESIZE ───────────────────────────────────────────────────────────────────
+function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+function autoResizeAll() { document.querySelectorAll('.prompt-textarea').forEach(autoResize); }
 
-// ─── COPY UTILITY ─────────────────────────────────────────────────────────────
+// ─── COPY ─────────────────────────────────────────────────────────────────────
 function copyText(text, btn) {
   navigator.clipboard.writeText(text).then(() => {
-    const orig = btn.textContent;
-    btn.textContent = '✓ Kopyalandı';
-    setTimeout(() => btn.textContent = orig, 1500);
+    const orig = btn.innerHTML;
+    btn.textContent = t('copy_done');
+    setTimeout(() => btn.innerHTML = orig, 1500);
   });
 }
 
-// ─── TAB 1: SETUP ─────────────────────────────────────────────────────────────
-document.querySelectorAll('.copy-btn').forEach(btn => {
-  btn.addEventListener('click', () => copyText(btn.dataset.copy, btn));
-});
-
-
-// Checklist restore + save
-const chkKeys = ['chk1','chk2','chk3'];
-chkKeys.forEach(k => {
+// ─── SETUP CHECKLIST ──────────────────────────────────────────────────────────
+document.querySelectorAll('.copy-btn').forEach(btn => btn.addEventListener('click', () => copyText(btn.dataset.copy, btn)));
+['chk1','chk2','chk3'].forEach(k => {
   const el = document.getElementById(k);
   const lbl = el.nextElementSibling;
-  const saved = store.get(k, false);
-  el.checked = saved;
-  if (saved) lbl.classList.add('done');
+  el.checked = store.get(k, false);
+  if (el.checked) lbl.classList.add('done');
   el.addEventListener('change', () => {
     store.set(k, el.checked);
     el.checked ? lbl.classList.add('done') : lbl.classList.remove('done');
@@ -894,48 +965,43 @@ chkKeys.forEach(k => {
   });
 });
 
-
-// ─── TAB 3: PROMPTS ──────────────────────────────────────────────────────────
+// ─── RENDER PROMPTS ───────────────────────────────────────────────────────────
 const TAGS_ALL = ['navigation','form','validation','assertion','reporting'];
 
 function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function estimateTokens(text) {
-  return Math.ceil(text.length / 4);
-}
+function getTitle(p) { return typeof p.title === 'object' ? (p.title[currentLang] || p.title.de || '') : (p.title || ''); }
+function getContent(p) { return typeof p.content === 'object' ? (p.content[currentLang] || p.content.de || '') : (p.content || ''); }
 
 function renderPrompts() {
   const container = document.getElementById('promptList');
   container.innerHTML = '';
-  prompts.forEach((p, idx) => {
+  prompts.forEach(p => {
     const card = document.createElement('div');
     card.className = 'prompt-card';
     card.draggable = true;
     card.dataset.id = p.id;
-
     const collapsed = store.get('collapsed_' + p.id, false);
-    const tokens = estimateTokens(p.content || '');
-    const tagsHtml = TAGS_ALL.map(t =>
-      `<span class="tag${(p.tags||[]).includes(t)?' selected':''}" data-tag="${t}">${t}</span>`
+    const tokens = Math.ceil(getContent(p).length / 4);
+    const tagsHtml = TAGS_ALL.map(tag =>
+      `<span class="tag${(p.tags||[]).includes(tag)?' selected':''}" data-tag="${tag}">${tag}</span>`
     ).join('');
-
     card.innerHTML = `
       <div class="prompt-card-header${collapsed?' collapsed':''}" data-id="${p.id}">
-        <span class="drag-handle">⠿</span>
-        <span class="prompt-num">${escHtml(p.num || 'P-??')}</span>
-        <input class="prompt-title-input" type="text" value="${escHtml(p.title||'')}" placeholder="Başlık..." data-field="title" data-id="${p.id}">
-        <span class="token-badge">~${tokens} token</span>
-        <button class="btn btn-icon btn-sm collapse-btn" data-id="${p.id}" title="${collapsed?'Aç':'Daralt'}">${collapsed?'🔼':'🔽'}</button>
-        <button class="btn btn-icon btn-sm" data-action="copy" data-id="${p.id}" title="Kopyala">📋</button>
-        <button class="btn btn-icon btn-sm" data-action="delete" data-id="${p.id}" title="Sil">🗑️</button>
+        <span class="drag-handle material-symbols-outlined" style="font-size:20px;user-select:none;">drag_indicator</span>
+        <span class="prompt-num">${escHtml(p.num||'TC-??')}</span>
+        <input class="prompt-title-input" type="text" value="${escHtml(getTitle(p))}" placeholder="${t('placeholder_title')}" data-field="title" data-id="${p.id}">
+        <span class="token-badge"><span class="material-symbols-outlined" style="font-size:13px;vertical-align:middle;">generating_tokens</span> ~${tokens}</span>
+        <button class="btn btn-icon btn-sm collapse-btn" data-id="${p.id}"><span class="material-symbols-outlined" style="font-size:16px;">${collapsed?'expand_less':'expand_more'}</span></button>
+        <button class="btn btn-icon btn-sm" data-action="copy" data-id="${p.id}" title="Copy"><span class="material-symbols-outlined" style="font-size:16px;">content_copy</span></button>
+        <button class="btn btn-icon btn-sm" data-action="delete" data-id="${p.id}" title="Delete"><span class="material-symbols-outlined" style="font-size:16px;">delete</span></button>
       </div>
       <div class="prompt-card-body" style="${collapsed?'display:none':''}">
-        <textarea class="prompt-textarea" data-field="content" data-id="${p.id}" placeholder="Prompt içeriği...">${escHtml(p.content||'')}</textarea>
+        <textarea class="prompt-textarea" data-field="content" data-id="${p.id}" placeholder="${t('placeholder_content')}">${escHtml(getContent(p))}</textarea>
         <div class="tag-row" data-id="${p.id}">${tagsHtml}</div>
       </div>`;
-
     container.appendChild(card);
     setupDragEvents(card);
   });
@@ -945,28 +1011,27 @@ function renderPrompts() {
 
 function setupPromptEvents() {
   const container = document.getElementById('promptList');
-
-  // Delegated events
   container.querySelectorAll('[data-field="title"]').forEach(el => {
     el.addEventListener('input', () => {
       const p = prompts.find(x => x.id === el.dataset.id);
-      if (p) { p.title = el.value; saveAll(); }
+      if (!p) return;
+      if (typeof p.title !== 'object') p.title = { de: p.title, en: p.title };
+      p.title[currentLang] = el.value;
+      saveAll();
     });
   });
-
   container.querySelectorAll('[data-field="content"]').forEach(el => {
     el.addEventListener('input', () => {
       autoResize(el);
       const p = prompts.find(x => x.id === el.dataset.id);
-      if (p) {
-        p.content = el.value;
-        const badge = el.closest('.prompt-card').querySelector('.token-badge');
-        if (badge) badge.textContent = '~' + estimateTokens(el.value) + ' token';
-        saveAll();
-      }
+      if (!p) return;
+      if (typeof p.content !== 'object') p.content = { de: p.content, en: p.content };
+      p.content[currentLang] = el.value;
+      const badge = el.closest('.prompt-card').querySelector('.token-badge');
+      if (badge) badge.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;vertical-align:middle;">generating_tokens</span> ~${Math.ceil(el.value.length/4)}`;
+      saveAll();
     });
   });
-
   container.querySelectorAll('.collapse-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
@@ -976,41 +1041,34 @@ function setupPromptEvents() {
       const header = card.querySelector('.prompt-card-header');
       const collapsed = body.style.display === 'none';
       body.style.display = collapsed ? '' : 'none';
-      btn.textContent = collapsed ? '🔽' : '🔼';
+      btn.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px;">${collapsed?'expand_more':'expand_less'}</span>`;
       header.classList.toggle('collapsed', !collapsed);
-      store.set('collapsed_' + id, !collapsed);
+      store.set('collapsed_'+id, !collapsed);
       if (collapsed) requestAnimationFrame(() => autoResize(body.querySelector('.prompt-textarea')));
     });
   });
-
   container.querySelectorAll('[data-action="copy"]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       const p = prompts.find(x => x.id === btn.dataset.id);
-      if (p) copyText(p.content || '', btn);
+      if (p) copyText(getContent(p), btn);
     });
   });
-
   container.querySelectorAll('[data-action="delete"]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       prompts = prompts.filter(x => x.id !== btn.dataset.id);
-      renumberPrompts();
-      renderPrompts();
-      saveAll();
+      renumberPrompts(); renderPrompts(); saveAll();
     });
   });
-
   container.querySelectorAll('.tag-row').forEach(row => {
     row.addEventListener('click', e => {
       const tag = e.target.dataset.tag;
       if (!tag) return;
-      const id = row.dataset.id;
-      const p = prompts.find(x => x.id === id);
+      const p = prompts.find(x => x.id === row.dataset.id);
       if (!p) return;
       p.tags = p.tags || [];
-      if (p.tags.includes(tag)) { p.tags = p.tags.filter(t => t !== tag); }
-      else { p.tags.push(tag); }
+      p.tags.includes(tag) ? p.tags = p.tags.filter(tt => tt !== tag) : p.tags.push(tag);
       e.target.classList.toggle('selected');
       saveAll();
     });
@@ -1018,95 +1076,80 @@ function setupPromptEvents() {
 }
 
 function renumberPrompts() {
-  prompts.forEach((p, i) => { p.num = 'P-' + String(i+1).padStart(2,'0'); });
+  prompts.forEach((p, i) => { p.num = 'TC-' + String(i+1).padStart(2,'0'); });
 }
 
-// ─── DRAG & DROP ─────────────────────────────────────────────────────────────
+// ─── DRAG & DROP ──────────────────────────────────────────────────────────────
 let dragSrcId = null;
-
 function setupDragEvents(card) {
-  card.addEventListener('dragstart', e => {
-    dragSrcId = card.dataset.id;
-    card.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-  });
+  card.addEventListener('dragstart', e => { dragSrcId = card.dataset.id; card.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
   card.addEventListener('dragend', () => card.classList.remove('dragging'));
-  card.addEventListener('dragover', e => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    card.classList.add('drag-over');
-  });
+  card.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; card.classList.add('drag-over'); });
   card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
   card.addEventListener('drop', e => {
-    e.preventDefault();
-    card.classList.remove('drag-over');
+    e.preventDefault(); card.classList.remove('drag-over');
     if (!dragSrcId || dragSrcId === card.dataset.id) return;
-    const srcIdx = prompts.findIndex(p => p.id === dragSrcId);
-    const dstIdx = prompts.findIndex(p => p.id === card.dataset.id);
-    if (srcIdx < 0 || dstIdx < 0) return;
-    const [moved] = prompts.splice(srcIdx, 1);
-    prompts.splice(dstIdx, 0, moved);
-    renumberPrompts();
-    renderPrompts();
-    saveAll();
+    const si = prompts.findIndex(p => p.id === dragSrcId);
+    const di = prompts.findIndex(p => p.id === card.dataset.id);
+    if (si < 0 || di < 0) return;
+    const [moved] = prompts.splice(si, 1);
+    prompts.splice(di, 0, moved);
+    renumberPrompts(); renderPrompts(); saveAll();
   });
 }
 
-// ─── PROMPT TOOLBAR ──────────────────────────────────────────────────────────
+// ─── TOOLBAR ──────────────────────────────────────────────────────────────────
 document.getElementById('resetPromptsBtn').addEventListener('click', () => {
-  showModal('Varsayılanlara Sıfırla', '<p>Mevcut tüm promptlar silinecek ve 8 varsayılan prompt yüklenecek. Devam edilsin mi?</p>', () => {
+  showModal(t('reset_title'), t('reset_body'), () => {
     prompts = DEFAULT_PROMPTS.map(p => ({...p}));
-    renderPrompts();
-    saveAll();
+    renderPrompts(); saveAll();
   });
 });
 
 document.getElementById('addPromptBtn').addEventListener('click', () => {
   const id = 'tp_' + Date.now();
-  const num = 'P-' + String(prompts.length + 1).padStart(2, '0');
-  prompts.push({ id, num, title: 'Yeni Prompt', content: '', tags: [] });
-  renderPrompts();
-  saveAll();
+  const num = 'TC-' + String(prompts.length+1).padStart(2,'0');
+  prompts.push({ id, num, title: { de: 'Neuer Testfall', en: 'New Test Case' }, content: { de: '', en: '' }, tags: [] });
+  renderPrompts(); saveAll();
 });
 
-// Template dropdown
 const templateBtn = document.getElementById('templateBtn');
 const templateMenu = document.getElementById('templateMenu');
 templateBtn.addEventListener('click', e => {
   e.stopPropagation();
-  templateMenu.classList.toggle('open');
+  const rect = templateBtn.getBoundingClientRect();
+  templateMenu.style.top = (rect.bottom + 6) + 'px';
+  templateMenu.style.left = rect.left + 'px';
+  const isOpen = templateMenu.classList.toggle('open');
+  if (isOpen) setTimeout(() => document.addEventListener('click', closeMenu, { once: true }), 0);
 });
-document.addEventListener('click', () => templateMenu.classList.remove('open'));
+function closeMenu() { templateMenu.classList.remove('open'); }
 
 templateMenu.addEventListener('click', e => {
   const tpl = e.target.dataset.tpl;
   if (!tpl || !TEMPLATES[tpl]) return;
-  const t = TEMPLATES[tpl];
+  const tmpl = TEMPLATES[tpl];
   const id = 'tp_' + Date.now();
-  const num = 'P-' + String(prompts.length + 1).padStart(2, '0');
-  prompts.push({ id, num, title: t.title, content: t.content, tags: t.tags });
-  renderPrompts();
-  saveAll();
+  const num = 'TC-' + String(prompts.length+1).padStart(2,'0');
+  prompts.push({ id, num, title: { ...tmpl.title }, content: { ...tmpl.content }, tags: [...tmpl.tags] });
+  renderPrompts(); saveAll();
   templateMenu.classList.remove('open');
 });
 
 document.getElementById('copyAllBtn').addEventListener('click', function() {
-  const text = prompts.map((p, i) => `=== ${p.num}: ${p.title} ===\n${p.content}`).join('\n\n');
+  const text = prompts.map(p => `=== ${p.num}: ${getTitle(p)} ===\n${getContent(p)}`).join('\n\n');
   copyText(text, this);
 });
 
 document.getElementById('exportJsonBtn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(prompts, null, 2)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify(prompts, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'testpilot-prompts.json';
+  a.download = 'testpilot-testcases.json';
   a.click();
 });
 
-document.getElementById('importJsonBtn').addEventListener('click', () => {
-  document.getElementById('importFileInput').click();
-});
-
+document.getElementById('importJsonBtn').addEventListener('click', () => document.getElementById('importFileInput').click());
 document.getElementById('importFileInput').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -1114,15 +1157,12 @@ document.getElementById('importFileInput').addEventListener('change', e => {
   reader.onload = ev => {
     try {
       const data = JSON.parse(ev.target.result);
-      if (!Array.isArray(data)) throw new Error('Dizi bekleniyor');
-      showModal('JSON İçe Aktar', `<p>${data.length} prompt yüklenecek. Mevcut promptlar silinecek. Devam edilsin mi?</p>`, () => {
-        prompts = data;
-        renumberPrompts();
-        renderPrompts();
-        saveAll();
+      if (!Array.isArray(data)) throw new Error('Array expected');
+      showModal(t('import_title'), t('import_confirm')(data.length), () => {
+        prompts = data; renumberPrompts(); renderPrompts(); saveAll();
       });
     } catch(err) {
-      showModal('Hata', `<p style="color:var(--danger)">Geçersiz JSON: ${err.message}</p>`, null);
+      showModal('Error', t('import_error')(err.message), null);
     }
     e.target.value = '';
   };
@@ -1138,15 +1178,17 @@ function showModal(title, bodyHtml, onConfirm) {
   document.getElementById('modalConfirm').style.display = onConfirm ? '' : 'none';
   document.getElementById('modalOverlay').classList.add('open');
 }
-document.getElementById('modalCancel').addEventListener('click', () => {
-  document.getElementById('modalOverlay').classList.remove('open');
-});
+document.getElementById('modalCancel').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('open'));
 document.getElementById('modalConfirm').addEventListener('click', () => {
   document.getElementById('modalOverlay').classList.remove('open');
   if (modalCallback) modalCallback();
 });
 
+// ─── LANGUAGE TOGGLE ──────────────────────────────────────────────────────────
+document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', () => setLang(btn.dataset.lang)));
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
+setLang(currentLang);
 renderPrompts();
 </script>
 </body>
