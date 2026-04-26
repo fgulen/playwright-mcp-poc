@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TestPilot POC — Playwright MCP Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --brand-primary: #6366f1;
@@ -39,7 +42,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   background: var(--bg-secondary);
   color: var(--text-primary);
   min-width: 900px;
@@ -60,7 +63,7 @@ body {
   top: 0;
   z-index: 100;
 }
-.header-logo { font-weight: 700; font-size: 18px; color: var(--brand-primary); }
+.header-logo { font-weight: 700; font-size: 18px; color: var(--brand-primary); font-family: 'Space Grotesk', sans-serif; }
 .header-logo span { color: var(--text-secondary); font-weight: 400; font-size: 13px; margin-left: 8px; }
 .save-indicator {
   font-size: 12px;
@@ -70,29 +73,55 @@ body {
 }
 .save-indicator.visible { opacity: 1; }
 
-/* TABS */
-.tab-nav {
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
+/* LAYOUT */
+.app-body {
   display: flex;
-  gap: 0;
+  min-height: calc(100vh - 56px);
 }
-.tab-btn {
-  padding: 12px 20px;
+
+/* SIDE NAV */
+.side-nav {
+  width: 200px;
+  flex-shrink: 0;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border);
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+}
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
   border: none;
+  border-radius: var(--radius);
   background: none;
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 14px;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
-  white-space: nowrap;
+  font-weight: 500;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s, color 0.15s;
 }
-.tab-btn:hover { color: var(--text-primary); }
-.tab-btn.active { color: var(--brand-primary); border-bottom-color: var(--brand-primary); font-weight: 500; }
+.nav-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.nav-btn.active { background: #eef2ff; color: var(--brand-primary); }
+@media (prefers-color-scheme: dark) {
+  .nav-btn.active { background: #1e1b4b; color: #a5b4fc; }
+}
+.nav-btn .nav-icon { font-size: 18px; line-height: 1; }
 
-.tab-content { display: none; padding: 24px; max-width: 1100px; margin: 0 auto; }
+/* CONTENT AREA */
+.content-area {
+  flex: 1;
+  min-width: 0;
+}
+.tab-content { display: none; padding: 24px; max-width: 1100px; }
 .tab-content.active { display: block; }
 
 /* CARDS & PANELS */
@@ -109,6 +138,7 @@ body {
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -155,7 +185,7 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--brand-primary);
 }
 textarea { resize: vertical; }
-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
+label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; font-family: 'Inter', sans-serif; }
 .form-row { display: grid; gap: 12px; margin-bottom: 12px; }
 .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
 .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
@@ -185,7 +215,7 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
 .code-block pre {
   padding: 12px;
   overflow-x: auto;
-  font-family: 'Courier New', monospace;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, 'Liberation Mono', monospace;
   font-size: 12px;
   color: var(--text-primary);
   white-space: pre-wrap;
@@ -207,7 +237,7 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
 
 /* CONFIG TEXTAREA */
 .config-area {
-  font-family: 'Courier New', monospace;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, 'Liberation Mono', monospace;
   font-size: 12px;
   min-height: 100px;
 }
@@ -258,8 +288,9 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
 .prompt-textarea {
   width: 100%;
   min-height: 60px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, 'Liberation Mono', monospace;
+  font-size: 14px;
+  line-height: 1.65;
   resize: none;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -348,7 +379,7 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
 /* MISC */
-.section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
+.section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); font-family: 'Plus Jakarta Sans', sans-serif; }
 .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
 .text-muted { color: var(--text-muted); font-size: 12px; }
 .flex { display: flex; gap: 8px; align-items: center; }
@@ -369,13 +400,21 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
   <div id="saveIndicator" class="save-indicator">✓ Kaydedildi</div>
 </div>
 
-<nav class="tab-nav">
-  <button class="tab-btn active" data-tab="setup">🔧 Kurulum</button>
-  <button class="tab-btn" data-tab="prompts">💬 Prompt Yönetimi</button>
+<div class="app-body">
+
+<nav class="side-nav">
+  <button class="nav-btn" data-tab="prompts">
+    <span class="nav-icon">💬</span> Promptlar
+  </button>
+  <button class="nav-btn" data-tab="setup">
+    <span class="nav-icon">🔧</span> Kurulum
+  </button>
 </nav>
 
+<div class="content-area">
+
 <!-- TAB 1: KURULUM -->
-<div id="tab-setup" class="tab-content active">
+<div id="tab-setup" class="tab-content">
   <div class="card">
     <div class="card-title">1. Playwright Extension Kur</div>
     <p class="text-muted mb-8">VS Code Marketplace'ten Microsoft tarafından yayınlanan resmi eklentiyi yükle:</p>
@@ -419,7 +458,7 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
 
 
 <!-- TAB 3: PROMPT YÖNETİMİ -->
-<div id="tab-prompts" class="tab-content">
+<div id="tab-prompts" class="tab-content active">
   <div class="prompt-toolbar">
     <div class="prompt-actions">
       <button class="btn btn-primary" id="addPromptBtn">+ Prompt Ekle</button>
@@ -445,6 +484,9 @@ label { display: block; font-size: 12px; color: var(--text-secondary); margin-bo
   <div id="promptList"></div>
 </div>
 
+
+</div><!-- /content-area -->
+</div><!-- /app-body -->
 
 <!-- MODAL (JSON Import) -->
 <div class="modal-overlay" id="modalOverlay">
@@ -480,337 +522,351 @@ function triggerSave() {
 const DEFAULT_PROMPTS = [
   {
     id: 'tp_p01', num: 'P-01', title: 'Landing Page Doğrulama',
-    content: `[ VERİLEN ]
-• Playwright MCP aktif ve tarayıcı bağlı
-• Herhangi bir sayfa açık (temiz oturum)
+    content: `VERILEN
+-------
+- Playwright MCP aktif, tarayıcı hazır
+- Yeni temiz oturum
 
-[ ADIMLAR ]
+ADIMLAR
+-------
 1. https://www.bahn.de adresine git
-2. waitForLoadState('domcontentloaded') → ardından 1s bekle (SPA lazy render)
-3. Cookie banner varsa kapat (try/catch — banner olmayabilir):
-   • Selector 1: button:has-text("Nur notwendige Cookies")
-   • Selector 2: button:has-text("Ablehnen")
-   • ⚠ Banner bir <div> overlay'dir — kapatılmadan form tıklanamaz
-4. Ana arama formunu kontrol et:
-   • input[name="quickFinderBasic-von"] → visible?
-   • input[name="quickFinderBasic-nach"] → visible?
-5. Raporla: document.title + document.documentElement.lang
-6. Screenshot: "p01_landing.png"
+2. Sayfa tam yüklenene kadar bekle
+3. Çerez onay penceresi açılırsa "Nur notwendige Cookies" butonuna tıkla
+   - Pencere yoksa devam et
+4. Ana sayfada şunların görünür olduğunu kontrol et:
+   - Von (Kalkış) alanı
+   - Nach (Varış) alanı
+5. Sayfa başlığını ve dil ayarını raporla
+6. Ekran görüntüsü al: p01_landing.png
 
-[ DOĞRULAMA ]
-✅ Von input görünür (input[name="quickFinderBasic-von"])
-✅ Nach input görünür (input[name="quickFinderBasic-nach"])
-✅ document.documentElement.lang === "de"
-✅ p01_landing.png kaydedildi
+DOGRULAMA
+---------
+[ ] Von (Kalkış) alanı görünür
+[ ] Nach (Varış) alanı görünür
+[ ] Sayfa dili Almanca ("de") olarak doğrulandı
+[ ] p01_landing.png kaydedildi
 
-📋 ÖZET: bahn.de açıldı, cookie banner kapatıldı, arama formu görünür ve dil "de" olarak doğrulandı.`,
+OZET
+----
+bahn.de açıldı, çerez onayı kapatıldı, arama formu görünür durumda.`,
     tags: ['navigation', 'assertion']
   },
   {
     id: 'tp_p02', num: 'P-02', title: 'Arama Formu Doldurma',
-    content: `[ VERİLEN ]
-• P-01 tamamlandı
-• bahn.de açık, cookie banner kapalı, Von/Nach inputlar görünür
+    content: `VERILEN
+-------
+- P-01 tamamlandı
+- bahn.de ana sayfası açık, Von ve Nach alanları görünür
 
-[ ADIMLAR ]
-1. Von (Kalkış) — overlay olabilir, force kullan:
-   • input[name="quickFinderBasic-von"] → click({ force: true })
-   • "Köln Hbf" yaz → [role="option"] listesi açılınca ilk seçeneği tıkla
-   • input değeri "Köln Hbf" olduğunu doğrula
+ADIMLAR
+-------
+1. Von (Kalkış) alanına tıkla ve "Köln Hbf" yaz:
+   - Açılan öneri listesinden ilk seçeneği tıkla
+   - Alanda "Köln Hbf" yazısının göründüğünü doğrula
 
-2. Nach (Varış) — aynı yöntem:
-   • input[name="quickFinderBasic-nach"] → click({ force: true })
-   • "Berlin Hbf" yaz → listeden ilk seçeneği tıkla
+2. Nach (Varış) alanına tıkla ve "Berlin Hbf" yaz:
+   - Açılan öneri listesinden ilk seçeneği tıkla
 
-3. Hinfahrt tarih/saat — Vue spinbutton, fill() ÇALIŞMAZ:
-   • .quick-finder-options__hinfahrt → page.evaluate(() => el.click()) ile aç
-   • Dialog açılınca nativeInputValueSetter yöntemiyle doldur:
-     – input[aria-label="Tag"]    → yarının günü
-     – input[aria-label="Monat"] → bu ayın numarası
-     – input[aria-label="Jahr"]  → bu yıl
-     – input[aria-label="Stunden"]  → 08
-     – input[aria-label="Minuten"]  → 00
-   • Her input için: setter.call(el, val) + dispatchEvent('input') + dispatchEvent('change')
-   • [data-test-id="quick-finder-save-button"] → JS click ile onayla
-   • waitForFunction(() => !document.querySelector('dialog[open]'))
+3. Hinfahrt (Gidiş) tarih/saat butonuna tıkla:
+   - Açılan pencerede Gün, Ay, Yıl alanlarını yarının tarihine ayarla
+   - Saat alanını 08:00 olarak ayarla
+   - "Übernehmen" (Kaydet) butonuna tıkla
+   - Pencere kapanana kadar bekle
 
-4. Screenshot: "p02_form_filled.png"
+4. Ekran görüntüsü al: p02_form_filled.png
 
-[ DOĞRULAMA ]
-✅ Von alanı "Köln Hbf" değerini içeriyor
-✅ Nach alanı "Berlin Hbf" değerini içeriyor
-✅ Hinfahrt butonu "ab 08:00" metnini içeriyor
-✅ Açık dialog yok (dialog[open] → null)
-✅ p02_form_filled.png kaydedildi
+DOGRULAMA
+---------
+[ ] Von alanında "Köln Hbf" yazıyor
+[ ] Nach alanında "Berlin Hbf" yazıyor
+[ ] Hinfahrt butonu "ab 08:00" gösteriyor
+[ ] Tarih/saat penceresi kapandı
+[ ] p02_form_filled.png kaydedildi
 
-📋 ÖZET: Köln→Berlin formu dolduruldu, yarın 08:00 Hinfahrt seçildi ve onaylandı.`,
+OZET
+----
+Köln → Berlin formu dolduruldu, yarın 08:00 gidiş seçildi ve onaylandı.`,
     tags: ['form', 'validation']
   },
   {
     id: 'tp_p03', num: 'P-03', title: 'Gelişmiş Filtreler',
-    content: `[ VERİLEN ]
-• P-02 tamamlandı
-• Von: "Köln Hbf", Nach: "Berlin Hbf", Hinfahrt: yarın 08:00
+    content: `VERILEN
+-------
+- P-02 tamamlandı
+- Kalkış: Köln Hbf, Varış: Berlin Hbf, Gidiş: yarın 08:00
 
-[ ADIMLAR ]
-1. 1. Klasse seç:
-   • button._segment-option-KLASSE_1 → click()
-   • aria-selected="true" olduğunu doğrula
+ADIMLAR
+-------
+1. Bilet sınıfı seç:
+   - "1. Klasse" seçeneğine tıkla
+   - Seçeneğin aktif/seçili hale geldiğini kontrol et
 
-2. Verkehrsmittel — sadece ICE + IC/EC:
-   • button.SearchVerkehrsmittel__dialogBtn → click()
-   • switch-2'den switch-9'a kadar toggle'ları KAPAT:
-     ⚠ Toggle span intercept eder → label[for="switch-N--db-web-switch"] tıkla (N=2..9)
-   • Übernehmen → JS click (document.querySelector('[class*="primary"]').click())
-   • Butonun "Benutzerdefiniert" içerdiğini doğrula
+2. Araç tipi filtrele — sadece ICE ve IC/EC kalsın:
+   - Verkehrsmittel (Araç tipi) butonuna tıkla
+   - Açılan pencerede ICE ve IC/EC dışındaki tüm seçenekleri kapat
+   - "Übernehmen" (Uygula) butonuna tıkla
+   - Butonun "Benutzerdefiniert" gösterdiğini doğrula
 
-3. BahnCard 25 — Vue 3, dispatchEvent ÇALIŞMAZ:
-   • "Person" içeren buton → JS click (Reisende dialog)
-   • .DBWebSelectButton içinde "Ermäßigung" yazan → click() (dropdown aç)
-   • [role="option"][aria-label*="BahnCard 25, 1. Klasse"] → boundingBox al
-     → page.mouse.click(box.x + box.width/2, box.y + box.height/2)
-   • ⚠ KRİTİK: Dropdown açık kalır → Übernehmen'i kapatır!
-     → .DBWebSelectButton içinde "Reisende" yazan → tıkla (dropdown kapat)
-   • [data-test-id="quick-finder-save-button"] → boundingBox → page.mouse.click(cx, cy)
-   • "BahnCard 25" içeren buton görünür olmalı
+3. Yolcu indirimi ekle — BahnCard 25:
+   - Yolcu / Kişi butonuna tıkla
+   - Ermäßigung (İndirim) açılır menüsünü aç
+   - "BahnCard 25, 1. Klasse" seçeneğini tıkla
+   - Menü kapanmazsa başlık alanına tıklayarak kapat
+   - "Übernehmen" (Uygula) butonuna tıkla
+   - "BahnCard 25" içeren butonun göründüğünü doğrula
 
-4. Rückfahrt (bugün + 4 gün, 18:00):
-   • .quick-finder-options__rueckfahrt → JS click
-   • Aktif dialog: document.querySelector('dialog[open]')
-   • Takvimden hedef günü: .db-web-date-picker-calendar-day[index = gün+1] → JS click
-     ⚠ Sadece input set etmek yetmez — takvimden tıklamak zorunlu
-   • Stunden: 18, Minuten: 00 → nativeInputValueSetter yöntemi
-   • dialog[open] içindeki [data-test-id="undefined-save-button"] → tıkla
-     ⚠ Hinfahrt'tan FARKLI test-id!
-   • waitForFunction(() => !document.querySelector('dialog[open]'))
+4. Rückfahrt (Dönüş) ekle — bugünden 4 gün sonra, 18:00:
+   - Rückfahrt (Dönüş) butonuna tıkla
+   - Açılan takvimden hedef günü seç
+   - Saat alanını 18:00 olarak ayarla
+   - Kaydet butonuna tıkla, pencere kapanana kadar bekle
 
-5. Screenshot: "p03_filters_applied.png"
+5. Ekran görüntüsü al: p03_filters_applied.png
 
-[ DOĞRULAMA ]
-✅ 1. Klasse butonu aria-selected="true"
-✅ Verkehrsmittel butonu "Benutzerdefiniert" içeriyor
-✅ "BahnCard 25" içeren buton görünür
-✅ Rückfahrt butonu "ab 18:00" içeriyor
-✅ Açık dialog yok
-✅ p03_filters_applied.png kaydedildi
+DOGRULAMA
+---------
+[ ] 1. Klasse seçili ve aktif
+[ ] Verkehrsmittel butonu "Benutzerdefiniert" gösteriyor
+[ ] "BahnCard 25" içeren buton görünür
+[ ] Rückfahrt butonu "ab 18:00" gösteriyor
+[ ] Tarih/saat penceresi kapandı
+[ ] p03_filters_applied.png kaydedildi
 
-📋 ÖZET: 1. Klasse, ICE-only, BahnCard 25 ve Rückfahrt (bugün+4, 18:00) yapılandırıldı.`,
+OZET
+----
+1. Klasse, ICE-only, BahnCard 25 ve dönüş (bugün+4, 18:00) yapılandırıldı.`,
     tags: ['form', 'validation']
   },
   {
     id: 'tp_p04', num: 'P-04', title: 'Arama Sonuçları Analizi',
-    content: `[ VERİLEN ]
-• P-03 tamamlandı
-• Filtreler: 1. Klasse · ICE/IC-EC only · BahnCard 25 · Hin+Rück
+    content: `VERILEN
+-------
+- P-03 tamamlandı
+- Filtreler aktif: 1. Klasse, ICE/IC-EC, BahnCard 25, Gidiş-Dönüş
 
-[ ADIMLAR ]
-1. Arama başlat:
-   • button.quick-finder-basic__search-btn--desktop → click()
-   ⚠ "Suchen" metni 2 butonda var (desktop+mobile) → strict mode hatası
-     → class-based selector zorunlu
+ADIMLAR
+-------
+1. "Suchen" (Ara) butonuna tıkla
+2. Sonuç sayfasının yüklenmesini bekle (en fazla 40 saniye)
+3. Aşağıdakileri raporla:
+   - Toplam bulunan bağlantı sayısı
+   - İlk 3 bağlantının kalkış saati, varış saati ve toplam süresi
+   - Sayfadaki en düşük fiyat
+   - ICE treni var mı? (Evet / Hayır)
+   - "ausgebucht" (tükenmiş) uyarısı var mı?
+   - Aktarmalı sefer sayısı
+4. Ekran görüntüsü al: p04_results.png
 
-2. Sonuç yüklenmesini bekle (kombinasyon — sadece timeout GÜVENILMEZ):
-   • waitForURL('**/suche**', { timeout: 40_000 })
-   • waitForFunction(
-       () => /\d{2}:\d{2}[–\-]\d{2}:\d{2}/.test(document.body.textContent),
-       { timeout: 40_000 }
-     )
-   ⚠ Zaman ayırıcısı en-dash (–, U+2013) — normal tire ile regex EŞLEŞMEz
+DOGRULAMA
+---------
+[ ] Sonuç sayfası yüklendi
+[ ] En az 1 bağlantı listelendi
+[ ] İlk 3 bağlantının saat ve süre bilgisi raporlandı
+[ ] En düşük fiyat raporlandı
+[ ] p04_results.png kaydedildi
 
-3. Şunları raporla:
-   • Toplam bağlantı sayısı (unique time-range pattern)
-   • İlk 3 bağlantının: kalkış saati · varış saati · süre
-   • En düşük fiyat (ab X,XX € pattern)
-   • ICE var mı? (ICE \d+ pattern → Evet/Hayır)
-   • "ausgebucht" uyarısı var mı?
-   • Aktarmalı sefer sayısı ("Umstieg" içeren kartlar)
-
-4. Screenshot: "p04_results.png"
-
-[ DOĞRULAMA ]
-✅ URL "/suche" içeriyor
-✅ En az 1 bağlantı bulundu ve listelendi
-✅ İlk 3 bağlantının saat ve süre bilgisi raporlandı
-✅ En düşük fiyat raporlandı
-✅ p04_results.png kaydedildi
-
-📋 ÖZET: Arama gönderildi, /suche sayfası yüklendi, bağlantı/fiyat detayları raporlandı.`,
+OZET
+----
+Arama gönderildi, sonuç sayfası yüklendi, bağlantı ve fiyat detayları raporlandı.`,
     tags: ['assertion', 'reporting']
   },
   {
     id: 'tp_p05', num: 'P-05', title: 'Bilet Seçimi & Koltuk',
-    content: `[ VERİLEN ]
-• P-04 tamamlandı
-• Sonuç listesi görünür, URL /suche içeriyor
+    content: `VERILEN
+-------
+- P-04 tamamlandı
+- Arama sonuç sayfası açık, bağlantılar görünür
 
-[ ADIMLAR ]
-1. Hinfahrt seç:
-   • İlk görünür "Weiter" butonu → JS click
-   • waitForURL('**/rueckfahrt**', { timeout: 30_000 }) + waitForFunction(results loaded)
+ADIMLAR
+-------
+1. Gidiş seferi seç:
+   - İlk sonuç için "Weiter" (Devam) butonuna tıkla
+   - Dönüş seçimi sayfasının yüklenmesini bekle
 
-2. Rückfahrt seç:
-   • Sonuçlar yüklenince ilk "Weiter" butonu → JS click
-   • waitForURL('**/angebotsauswahl**', { timeout: 30_000 })
+2. Dönüş seferi seç:
+   - İlk sonuç için "Weiter" (Devam) butonuna tıkla
+   - Teklif sayfasının yüklenmesini bekle
 
-3. Angebote sayfası (/buchung/fahrplan/angebotsauswahl):
-   • "Super Sparpreis" + "Auswählen" içeren buton → JS click
-   • "Sitzplatzreservierung" içeren label → JS click (aktif et)
-     ⚠ Label tıkla, checkbox'a değil — toggle span intercept eder
-   • "Sitzplatz auswählen" butonu → JS click
+3. Teklif sayfasında:
+   - "Super Sparpreis" yanındaki "Auswählen" (Seç) butonuna tıkla
+   - "Sitzplatzreservierung" (Koltuk rezervasyonu) seçeneğini aktif et
+   - "Sitzplatz auswählen" (Koltuk seç) butonuna tıkla
+   - Koltuk seçim penceresinin yüklendiğini doğrula
 
-4. GSD iframe doğrula (same-origin → frameLocator kullan):
-   • iframe.db-web-dialog-gsd-iframe__iframe → visible?
-   • page.frameLocator('iframe.db-web-dialog-gsd-iframe__iframe')
-     .locator('body') → containsText('ICE')?
+4. Koltuk seçim penceresini doğrula:
+   - Pencerenin görünür olduğunu kontrol et
+   - Pencere içinde tren bilgisinin göründüğünü doğrula
 
-5. 🚨 GÜVENLİK SINIRI — Bu butonlara KESİNLİKLE TIKLAMA:
-   • "Kaufen" · "Bezahlen" · "Weiter zur Buchung" · "Kostenpflichtig"
-   • Sayfa üzerinde kaç tane olduğunu say ve logla, etkileşime girme
+5. GUVENLIK SINIRI — Sadece say, tıklama:
+   - Sayfadaki şu butonların sayısını logla, hiçbirine dokunma:
+     - "Kaufen" (Satın al)
+     - "Bezahlen" (Öde)
+     - "Weiter zur Buchung" (Rezervasyona devam)
+     - "Kostenpflichtig" (Ücretli)
 
-6. Screenshot: "p05_detail.png"
+6. Ekran görüntüsü al: p05_detail.png
 
-[ DOĞRULAMA ]
-✅ /rueckfahrt sayfası yüklendi
-✅ /angebotsauswahl sayfasına geçildi
-✅ Sitzplatzreservierung aktif edildi
-✅ GSD iframe görünür
-✅ iframe içinde "ICE" metni mevcut
-✅ Satın alma butonlarına tıklanmadı
-✅ p05_detail.png kaydedildi
+DOGRULAMA
+---------
+[ ] Dönüş seçimi sayfası yüklendi
+[ ] Teklif sayfasına geçildi
+[ ] Koltuk rezervasyonu aktif edildi
+[ ] Koltuk seçim penceresi görünür
+[ ] Pencere içinde ICE tren bilgisi mevcut
+[ ] Satın alma butonlarına tıklanmadı
+[ ] p05_detail.png kaydedildi
 
-📋 ÖZET: Hinfahrt+Rückfahrt seçildi, Super Sparpreis+koltuk aktif edildi, GSD iframe doğrulandı, güvenlik sınırı korundu.`,
+OZET
+----
+Gidiş + dönüş seçildi, Super Sparpreis + koltuk aktif edildi, koltuk penceresi doğrulandı.`,
     tags: ['navigation', 'assertion']
   },
   {
     id: 'tp_p06', num: 'P-06', title: 'Fiyat & Tarife Analizi',
-    content: `[ VERİLEN ]
-• P-05 tamamlandı
-• Angebote / fiyat seçim sayfası açık, Super Sparpreis seçili
+    content: `VERILEN
+-------
+- P-05 tamamlandı
+- Teklif seçim sayfası açık, Super Sparpreis seçili
 
-[ ADIMLAR ]
+ADIMLAR
+-------
 1. Tüm tarife seçeneklerini listele:
-   • Super Sparpreis · Sparpreis · Flexpreis (varsa diğerleri)
-   • Her tarife için: fiyat (€) · iptal koşulu · müsaitlik durumu
-   ⚠ data-value attribute'unda "&" varsa CSS selector kırılır
-     → querySelectorAll('[data-value]') + getAttribute() ile filtrele
+   - Super Sparpreis, Sparpreis, Flexpreis (varsa diğerleri)
+   - Her tarife için: fiyat (€), iptal koşulu, müsaitlik durumu
 
-2. BahnCard 25 indirimini doğrula:
-   • Fiyat yanında "25%" veya "BahnCard" ibaresi görünüyor mu?
-   • Hesaplanan fiyat indirimli fiyat ile uyuşuyor mu?
+2. BahnCard 25 indiriminin uygulandığını doğrula:
+   - Fiyat yanında indirim ibaresi görünüyor mu?
+   - Gösterilen fiyat indirimli mi?
 
-3. Toplam maliyet hesapla ve raporla:
-   • Hinfahrt Super Sparpreis : _____ €
-   • Rückfahrt Super Sparpreis: _____ €
-   • Sitzplatzreservierung    : _____ €
-   • TOPLAM                   : _____ €
-   (Referans: 236,98 € H+R + 13,80 € Sitzplatz = ~250,78 €)
+3. Toplam maliyeti hesapla ve raporla:
+   - Gidiş Super Sparpreis   : _______ €
+   - Dönüş Super Sparpreis   : _______ €
+   - Koltuk rezervasyonu     : _______ €
+   - TOPLAM                  : _______ €
+   (Karşılaştırma: ~250,78 € beklenen — 236,98 € H+R + 13,80 € koltuk)
 
-4. "Sparpreis" tarifesini seç — SADECE SEÇ, DEVAM ETME
-5. Screenshot: "p06_pricing.png"
+4. "Sparpreis" tarifesini seç — SADECE SEÇ, "Weiter" butonuna tıklama
+5. Ekran görüntüsü al: p06_pricing.png
 
-[ DOĞRULAMA ]
-✅ En az 2 tarife seçeneği listelendi
-✅ BahnCard 25 indiriminin uygulandığı görünür
-✅ Toplam fiyat (H+R + Sitzplatz) hesaplandı ve raporlandı
-✅ Sparpreis seçili ama "Weiter" tıklanmadı
-✅ p06_pricing.png kaydedildi
+DOGRULAMA
+---------
+[ ] En az 2 tarife seçeneği listelendi
+[ ] BahnCard 25 indiriminin uygulandığı görünür
+[ ] Toplam fiyat hesaplandı ve raporlandı
+[ ] Sparpreis seçili ama devam edilmedi
+[ ] p06_pricing.png kaydedildi
 
-📋 ÖZET: Tüm tarife seçenekleri analiz edildi, BahnCard indirimi doğrulandı, toplam maliyet raporlandı.`,
+OZET
+----
+Tüm tarife seçenekleri analiz edildi, BahnCard indirimi doğrulandı, toplam maliyet raporlandı.`,
     tags: ['assertion', 'reporting']
   },
   {
     id: 'tp_p07', num: 'P-07', title: 'Güvenlik Sınırı & Özet Rapor',
-    content: `[ VERİLEN ]
-• P-01..P-06 tüm adımlar çalıştırıldı
-• Sparpreis seçili, satın alma öncesi son ekran
+    content: `VERILEN
+-------
+- P-01..P-06 tüm adımlar tamamlandı
+- Sparpreis seçili, satın alma öncesi son ekran
 
-[ ADIMLAR ]
-1. 🚨 GÜVENLİK KONTROLÜ — tıklama yasak butonlar:
-   • Şu butonları ara ve SADECE sayılarını logla:
-     – "Weiter zur Buchung" · "Kaufen" · "Bezahlen" · "Kostenpflichtig"
-   • Hiçbirine tıklama, hover etme, focus verme
+ADIMLAR
+-------
+1. Güvenlik kontrolü — bu butonlara sadece bak, tıklama:
+   - Sayfada kaç tane olduğunu say ve raporla (tıklama YASAK):
+     - "Weiter zur Buchung" (Rezervasyona devam)
+     - "Kaufen" (Satın al)
+     - "Bezahlen" (Öde)
+     - "Kostenpflichtig" (Ücretli)
 
-2. Aşağıdaki özet raporu oluştur:
+2. Özet rapor oluştur:
 
-   ┌─ TEST SENARYOSU ÖZET RAPORU ─────────────────┐
-   │ Tarih  : [bugünün tarihi]                     │
-   │ Süre   : [başlangıçtan bu yana geçen süre]    │
-   │ URL    : https://www.bahn.de                  │
-   │ Senaryo: Köln Hbf → Berlin Hbf               │
-   │ Tür    : Hin+Rück · 1. Klasse · ICE · BC25   │
-   │ Tarife : Sparpreis                            │
-   ├───────────────────────────────────────────────┤
-   │ P-01 Landing Page    : [✓/✗] — [not]         │
-   │ P-02 Form Doldurma   : [✓/✗] — [not]         │
-   │ P-03 Filtreler       : [✓/✗] — [not]         │
-   │ P-04 Arama Sonuçları : [✓/✗] — [not]         │
-   │ P-05 Bilet Seçimi    : [✓/✗] — [not]         │
-   │ P-06 Fiyat Analizi   : [✓/✗] — [not]         │
-   │ P-07 Güvenlik Sınırı : ✓ Korundu             │
-   ├───────────────────────────────────────────────┤
-   │ En düşük fiyat : _____ € (Sparpreis, BC25)   │
-   │ Sorunlar       : [varsa listele / Yok]        │
-   └───────────────────────────────────────────────┘
+   SENARYO OZET RAPORU
+   -------------------
+   Tarih    : [bugünün tarihi]
+   Sure     : [başlangıçtan geçen süre]
+   Site     : https://www.bahn.de
+   Rota     : Köln Hbf → Berlin Hbf
+   Tur      : Gidiş-Dönüş, 1. Klasse, ICE, BahnCard 25
+   Tarife   : Sparpreis
+
+   ADIM SONUCLARI
+   P-01 Landing Page     : [GECTI / KALDI] — [not]
+   P-02 Form Doldurma    : [GECTI / KALDI] — [not]
+   P-03 Filtreler        : [GECTI / KALDI] — [not]
+   P-04 Arama Sonuclari  : [GECTI / KALDI] — [not]
+   P-05 Bilet Secimi     : [GECTI / KALDI] — [not]
+   P-06 Fiyat Analizi    : [GECTI / KALDI] — [not]
+   P-07 Guvenlik Siniri  : KORUNDU
+
+   En dusuk fiyat : _______ € (Sparpreis, BahnCard 25)
+   Sorunlar       : [varsa listele — yoksa "Yok"]
 
 3. Tüm tarayıcı sekmelerini kapat
 
-[ DOĞRULAMA ]
-✅ "Kaufen/Bezahlen/Weiter zur Buchung" butonlarına tıklanmadı
-✅ Tüm P-01..P-06 adım sonuçları tabloda dolduruldu
-✅ Toplam fiyat ve sorunlar raporlandı
-✅ Tarayıcı kapatıldı
+DOGRULAMA
+---------
+[ ] Satın alma butonlarına tıklanmadı
+[ ] P-01..P-06 sonuçları tabloda dolduruldu
+[ ] Toplam fiyat ve sorunlar raporlandı
+[ ] Tarayıcı kapatıldı
 
-📋 ÖZET: Test tamamlandı — 7 adım çalıştırıldı, güvenlik sınırı korundu, tam özet rapor oluşturuldu.`,
+OZET
+----
+Test tamamlandı — 7 adım çalıştırıldı, güvenlik sınırı korundu, özet rapor oluşturuldu.`,
     tags: ['reporting']
   },
   {
     id: 'tp_p08', num: 'P-08', title: 'Framework Kodu Oluştur',
-    content: `[ VERİLEN ]
-• P-01..P-07 MCP ile doğrulandı, tüm selector'lar çalışıyor
-• FRAMEWORK.md dosyası proje kök dizininde mevcut
-• PLAYWRIGHT_MCP_TIPS.md dosyası proje kök dizininde mevcut
+    content: `VERILEN
+-------
+- P-01..P-07 MCP ile doğrulandı, tüm adımlar çalışıyor
+- FRAMEWORK.md dosyası proje kök dizininde mevcut
+- PLAYWRIGHT_MCP_TIPS.md dosyası proje kök dizininde mevcut
 
-[ ADIMLAR ]
-1. Her iki dosyayı oku: FRAMEWORK.md + PLAYWRIGHT_MCP_TIPS.md
+ADIMLAR
+-------
+1. Oku: FRAMEWORK.md + PLAYWRIGHT_MCP_TIPS.md
 
-2. playwright-framework/ klasörünü oluştur
+2. Oluştur: playwright-framework/ klasörü
 
-3. Şu dosyaları üret (FRAMEWORK.md §Output Structure sırasıyla):
-   • .env               → BASE_URL, PURCHASE_GUARD=true, HEADLESS=false
-   • .env.example       → tüm değerler boş
-   • .gitignore
-   • package.json       → @playwright/test + dotenv, TypeScript only
-   • playwright.config.ts → timeout:120_000, video:on, viewport:null, --start-maximized
-   • global-setup.ts    → PURCHASE_GUARD kontrolü (false ise throw Error)
-   • global-teardown.ts
-   • pages/BasePage.ts  → screenshot(), waitForIdle(), guardedAction()
-   • pages/BahnSearchPage.ts   → P-01/P-02/P-03 adımları
-   • pages/BahnResultsPage.ts  → P-04 adımları
-   • pages/BahnDetailPage.ts   → P-05/P-06 adımları
-   • tests/TP-001/db-booking-flow.spec.ts → P-01..P-07 her biri ayrı test() bloğu
-   • utils/reporter.ts  → FRAMEWORK.md §REPORT.md Generation implementasyonu
-   • utils/logger.ts    → step logger
-   • utils/screenshotter.ts → hata anında otomatik screenshot
-   • fixtures/test-fixtures.ts
-   • reports/.gitkeep
-   • README.md          → Quick Start dahil
+3. Üret (FRAMEWORK.md §Output Structure sırasıyla):
+   - .env                → BASE_URL, PURCHASE_GUARD=true, HEADLESS=false
+   - .env.example        → tüm değerler boş
+   - .gitignore
+   - package.json        → @playwright/test + dotenv, TypeScript
+   - playwright.config.ts   → timeout:120000, video:'on'
+   - global-setup.ts        → PURCHASE_GUARD=false ise başlatmayı durdur
+   - global-teardown.ts
+   - pages/BasePage.ts              → screenshot, bekleme, güvenlik kontrol metodları
+   - pages/BahnSearchPage.ts        → P-01, P-02, P-03 adımları
+   - pages/BahnResultsPage.ts       → P-04 adımları
+   - pages/BahnDetailPage.ts        → P-05, P-06 adımları
+   - tests/TP-001/db-booking-flow.spec.ts  → P-01..P-07 her biri ayrı test() bloğu
+   - utils/reporter.ts              → FRAMEWORK.md §REPORT.md üretimi
+   - utils/logger.ts                → adım logger
+   - utils/screenshotter.ts         → hata anında otomatik screenshot
+   - fixtures/test-fixtures.ts
+   - reports/.gitkeep
+   - README.md                      → Quick Start dahil
 
-4. PLAYWRIGHT_MCP_TIPS.md'den şu pattern'ları koda yansıt:
-   • Vue spinbutton → nativeInputValueSetter helper (utils/)
-   • Toggle → label click helper
-   • BahnCard → page.mouse.click(boundingBox)
-   • Beklemeler → waitForURL + waitForFunction (sadece timeout değil)
-   • Selector → class-based, aria-label*= partial match
+4. PLAYWRIGHT_MCP_TIPS.md'den şu pattern'ları koda uygula:
+   - Vue tarih/saat alanları için özel giriş yardımcısı
+   - Toggle bileşenleri için label tıklama yardımcısı
+   - BahnCard seçimi için gerçek fare koordinatı kullanımı
+   - Sayfa geçişlerinde URL + içerik kombinasyonu bekleme
+   - Çakışan buton durumları için sınıf tabanlı seçici
 
-[ DOĞRULAMA ]
-✅ playwright-framework/ tüm dosyaları oluşturuldu
-✅ npm install başarılı
-✅ PURCHASE_GUARD=true hiçbir dosyada değiştirilmedi
-✅ P-01..P-07 ayrı test() blokları (birleştirme yok)
-✅ video:'off' hiçbir yerde yok
-✅ Vue helper'lar utils/ altında
+DOGRULAMA
+---------
+[ ] playwright-framework/ tüm dosyaları oluşturuldu
+[ ] npm install başarılı
+[ ] PURCHASE_GUARD=true hiçbir dosyada değiştirilmedi
+[ ] P-01..P-07 ayrı test() blokları (birleştirme yok)
+[ ] video:'off' hiçbir yerde yok
+[ ] Yardımcı metodlar utils/ altında ayrı dosyalarda
 
-📋 ÖZET: MCP ile doğrulanmış senaryo tam TypeScript Playwright framework'e dönüştürüldü — POM, Vue helper'lar, video, reporter ve güvenlik sınırı dahil.`,
+OZET
+----
+MCP ile doğrulanmış senaryo TypeScript Playwright framework'e dönüştürüldü — Page Object, yardımcı metodlar, video kaydı, reporter ve güvenlik sınırı dahil.`,
     tags: ['reporting']
   }
 ];
@@ -824,11 +880,12 @@ const TEMPLATES = {
 };
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-const DATA_VERSION = 4;
+const DATA_VERSION = 6;
 let prompts = store.get('prompts', null);
 const storedVersion = store.get('dataVersion', 0);
 if (!prompts || prompts.length === 0 || storedVersion < DATA_VERSION) {
   prompts = DEFAULT_PROMPTS.map(p => ({...p}));
+  store.set('prompts', prompts);
   store.set('dataVersion', DATA_VERSION);
 }
 
@@ -840,15 +897,19 @@ function saveAll() {
 }
 
 // ─── TABS ─────────────────────────────────────────────────────────────────────
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    if (btn.dataset.tab === 'prompts') requestAnimationFrame(autoResizeAll);
-  });
+function switchTab(tab) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.nav-btn[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'prompts') requestAnimationFrame(autoResizeAll);
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
+
+switchTab('prompts');
 
 // ─── AUTO-RESIZE TEXTAREA ─────────────────────────────────────────────────────
 function autoResize(el) {
